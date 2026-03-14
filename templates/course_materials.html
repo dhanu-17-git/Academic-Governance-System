@@ -1,0 +1,223 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'dashboard' %}
+
+{% block title %}Repository - {{ record.subject_name }} | AcademicGov{% endblock %}
+
+{% block main_content %}
+<style>
+    :root {
+        --premium-indigo: #4f46e5;
+        --premium-slate: #0f172a;
+    }
+
+    .premium-glass {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+    }
+
+    .dark .premium-glass {
+        background: rgba(15, 23, 42, 0.65);
+        border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .file-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .dark .file-card {
+        background: rgba(30, 41, 59, 0.3);
+        border-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .file-card:hover {
+        transform: translateY(-6px);
+        border-color: var(--premium-indigo);
+        box-shadow: 0 16px 32px -8px rgba(79, 70, 229, 0.12);
+    }
+
+    .file-type-vibe {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        transition: transform 0.3s ease;
+    }
+
+    .file-card:hover .file-type-vibe {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    .download-btn {
+        width: 100%;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+        transition: all 0.3s;
+    }
+
+    .dark .download-btn {
+        background: rgba(15, 23, 42, 0.5);
+        color: #94a3b8;
+    }
+
+    .file-card:hover .download-btn {
+        background: var(--premium-indigo);
+        color: white;
+    }
+
+    .empty-state-icon {
+        animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-15px);
+        }
+    }
+</style>
+
+<div class="max-w-7xl mx-auto space-y-12">
+    <!-- Premium Header -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div>
+            <nav class="mb-5">
+                <a href="{{ url_for('student.course_plan_details', subject_id=record.subject_id) }}"
+                    class="group inline-flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
+                    <span
+                        class="material-symbols-outlined text-sm mr-2 group-hover:-translate-x-1 transition-transform">west</span>
+                    Return to Modules
+                </a>
+            </nav>
+            <h1
+                class="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-none mb-3">
+                Materials Repository
+            </h1>
+            <p class="text-slate-500 font-medium text-lg">{{ record.subject_name }}</p>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="premium-glass px-6 py-3 flex items-center gap-3">
+                <span class="material-symbols-outlined text-indigo-600">inventory_2</span>
+                <span class="text-sm font-black text-slate-900 dark:text-white">{{ notes|length }} Files Cached</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Materials Core -->
+    {% if notes %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {% for note in notes %}
+        {% set ext = note.file_path.rsplit('.', 1)[-1].lower() if '.' in note.file_path else 'file' %}
+        <div class="file-card p-6">
+            <div class="flex justify-between items-start mb-6">
+                <div class="file-type-vibe 
+                    {% if ext == 'pdf' %}bg-rose-100/50 text-rose-600
+                    {% elif ext in ['pptx','ppt'] %}bg-amber-100/50 text-amber-600
+                    {% elif ext in ['docx','doc'] %}bg-blue-100/50 text-blue-600
+                    {% else %}bg-slate-100/50 text-slate-600{% endif %}">
+                    {% if ext == 'pdf' %}📄
+                    {% elif ext in ['pptx','ppt'] %}📊
+                    {% elif ext in ['docx','doc'] %}📝
+                    {% else %}📎{% endif %}
+                </div>
+                <!-- Status Badge -->
+                <span
+                    class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase tracking-wider rounded-md border border-emerald-100/50">Verified</span>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-black text-slate-900 dark:text-white line-clamp-2 leading-tight mb-2">{{
+                    note.title }}</h3>
+                <div class="flex items-center gap-3">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">calendar_today</span>
+                        {{ note.uploaded_at[:10] }}
+                    </span>
+                    <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ ext }}
+                        Document</span>
+                </div>
+            </div>
+
+            <div class="mt-auto">
+                <a href="{{ url_for('serve_upload', filename=note.file_path) }}" target="_blank"
+                    class="download-btn group/btn">
+                    <span class="material-symbols-outlined text-lg">visibility</span>
+                    Open Resource
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="premium-glass p-12 text-center">
+        <div
+            class="empty-state-icon w-20 h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600">folder_off</span>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">Repository Offline</h3>
+        <p class="text-slate-500 font-medium max-w-sm mx-auto mb-6">The instructor has not synchronized any assets for
+            this course module yet. Frequency of updates may vary.</p>
+        <a href="{{ url_for('student.course_plan_details', subject_id=record.subject_id) }}"
+            class="inline-flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-xl shadow-indigo-600/20">
+            <span class="material-symbols-outlined">west</span>
+            Return to Timeline
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Footer Insights -->
+    <div class="flex flex-col md:flex-row gap-6">
+        <div class="flex-1 p-6 premium-glass bg-indigo-600/5 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-indigo-600 text-lg">contact_support</span>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Need Assistance?</h4>
+                <p class="text-slate-500 text-xs font-medium">Contact your subject coordinator if you cannot find
+                    specific resources.</p>
+            </div>
+        </div>
+        <div class="flex-1 p-6 premium-glass bg-emerald-600/5 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-emerald-600 text-lg">verified</span>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm text-slate-900 dark:text-white">Academic Integrity</h4>
+                <p class="text-slate-500 text-xs font-medium">All materials are provided strictly for educational
+                    purposes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

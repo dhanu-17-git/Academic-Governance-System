@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Lab Status & Availability{% endblock %}
+
+{% block extra_css %}
+<!-- React App CSS -->
+<link rel="stylesheet" crossorigin href="{{ url_for('static', filename='advanced_labs/assets/index-BZd9qMM9.css') }}">
+<style>
+  /* 
+   * SCOPE TAILWIND STYLES 
+   * Prevent Tailwind's preflight from breaking Bootstrap's global layout/nav 
+   */
+
+  /* Restore Bootstrap Navbar layout broken by Tailwind flex resets */
+  .navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .navbar-nav {
+    flex-direction: row !important;
+  }
+
+  .nav-item {
+    margin-bottom: 0 !important;
+  }
+
+  /* Ensure the React root takes up necessary space and handles flex correctly */
+  #root {
+    min-height: calc(100vh - 100px);
+    width: 100%;
+    /* Create a new stacking context for the react app */
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Remove the standalone React header with "Dashboard" button since we already have a top nav */
+  #root header {
+    display: none !important;
+  }
+
+  /* Fix for the search bar inside the React module (Tailwind resets input styles) */
+  #root input[type="text"],
+  #root input[type="search"] {
+    min-height: 40px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="row mb-4 px-4 pt-4">
+    <div class="col-12">
+      <h2 class="fw-bold mb-0 text-primary">Lab Computing Resources</h2>
+      <p class="text-muted">Real-time availability and status of computer labs across campus.</p>
+    </div>
+  </div>
+
+  <!-- React Application Mounting Point -->
+  <div id="root"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- React App JS -->
+<script type="module" crossorigin
+  src="{{ url_for('static', filename='advanced_labs/assets/index-BqAiRa4A.js') }}"></script>
+{% endblock %}

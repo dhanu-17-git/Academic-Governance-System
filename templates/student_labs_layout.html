@@ -1,0 +1,402 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'labs' %}
+{% set active_page = 'layout' %}
+
+{% block title %}Lab Layout | AcademicGov{% endblock %}
+
+{% block main_content %}
+<style>
+    .circular-gauge {
+        background: conic-gradient(#10b981 0% 83%, #ef4444 83% 100%);
+        mask: radial-gradient(transparent 58%, black 60%);
+        -webkit-mask: radial-gradient(transparent 58%, black 60%);
+    }
+
+    @keyframes bounce-down {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(5px);
+        }
+    }
+
+    .animate-bounce-down {
+        animation: bounce-down 1.5s infinite;
+    }
+
+    /* System highlight for software filter */
+    .system-highlight {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
+        border-color: #3b82f6 !important;
+        transform: scale(1.05);
+        z-index: 10;
+        background-color: rgba(59, 130, 246, 0.1) !important;
+    }
+</style>
+
+<div class="flex flex-col lg:flex-row gap-8">
+    <div class="lg:w-3/4 space-y-6">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex">
+                    <button id="view-layout"
+                        class="px-4 py-1.5 rounded-lg text-sm font-bold bg-white dark:bg-slate-700 shadow-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">grid_view</span> Layout
+                    </button>
+                    <button id="view-list"
+                        class="px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg">list</span> List
+                    </button>
+                </div>
+                <div class="h-8 w-px bg-slate-200 dark:border-slate-700 mx-2"></div>
+                <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl px-2">
+                    <button class="p-1 hover:text-primary transition-colors"><span
+                            class="material-symbols-outlined text-lg">remove</span></button>
+                    <span class="text-sm font-bold px-2">100%</span>
+                    <button class="p-1 hover:text-primary transition-colors"><span
+                            class="material-symbols-outlined text-lg">add</span></button>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div
+                    class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex border border-slate-200 dark:border-slate-700">
+                    <button id="filter-all"
+                        class="px-4 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 shadow-sm filter-btn active">All</button>
+                    <button id="filter-working"
+                        class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 filter-btn">Working</button>
+                    <button id="filter-down"
+                        class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 filter-btn">Not Working</button>
+                </div>
+                <div class="relative">
+                    <select id="software-filter"
+                        class="appearance-none bg-slate-100 dark:bg-slate-800 border-none rounded-xl py-2 pl-4 pr-10 text-xs font-bold focus:ring-2 focus:ring-primary/20">
+                        <option value="">Filter by Software...</option>
+                        <option value="Python">Python</option>
+                        <option value="VS Code">VS Code</option>
+                        <option value="MATLAB">MATLAB</option>
+                        <option value="Photoshop">Photoshop</option>
+                        <option value="AutoCAD">AutoCAD</option>
+                    </select>
+                    <span
+                        class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-lg">unfold_more</span>
+                </div>
+            </div>
+        </div>
+        <div
+            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 min-h-[650px] relative overflow-hidden flex flex-col items-center">
+            <div class="flex flex-col items-center mb-12">
+                <div
+                    class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-2xl px-12 py-4 flex flex-col items-center gap-1 shadow-sm">
+                    <span class="material-symbols-outlined text-primary text-3xl">cast_for_education</span>
+                    <div class="text-center">
+                        <h3 class="text-xs font-black text-primary uppercase tracking-[0.2em]">Teacher Desk</h3>
+                        <p class="text-[10px] text-slate-400 font-medium">Screen this way</p>
+                    </div>
+                </div>
+                <span
+                    class="material-symbols-outlined text-slate-300 mt-4 animate-bounce-down">keyboard_double_arrow_down</span>
+            </div>
+            <div class="absolute top-6 right-8 flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Working</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Not Working</span>
+                </div>
+            </div>
+
+            <!-- PCs Grid -->
+            <div class="grid grid-cols-6 gap-8 relative" id="pc-grid">
+                {% for row in ['A', 'B', 'C'] %}
+                {% for col in range(1, 7) %}
+                {% set pc_id = row ~ col %}
+                {% set is_down = (pc_id == 'A4' or pc_id == 'B5' or pc_id == 'C3') %}
+                <div class="relative pc-container" data-pc-id="{{ pc_id }}"
+                    data-status="{{ 'down' if is_down else 'working' }}">
+                    <button
+                        class="pc-btn w-16 h-16 border-2 {{ 'border-rose-500 bg-rose-50/50 dark:bg-rose-900/10' if is_down else 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10' }} rounded-2xl flex flex-col items-center justify-center hover:shadow-lg transition-all outline-none focus:ring-2 focus:ring-primary/40 group">
+                        <span
+                            class="material-symbols-outlined {{ 'text-rose-600' if is_down else 'text-emerald-600' }}">desktop_windows</span>
+                        <span
+                            class="text-[10px] font-black {{ 'text-rose-600' if is_down else 'text-emerald-600' }} mt-1">{{
+                            pc_id }}</span>
+                        {% if is_down %}
+                        <span
+                            class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-white dark:border-slate-900">×</span>
+                        {% endif %}
+                    </button>
+
+                    <!-- Detailed Tooltip -->
+                    <div
+                        class="pc-tooltip hidden absolute -top-48 left-1/2 -translate-x-1/2 z-[100] w-64 bg-slate-900 text-white rounded-2xl p-4 shadow-2xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-bold">PC-{{ pc_id }}</span>
+                            <span
+                                class="{{ 'bg-rose-500/20 text-rose-400' if is_down else 'bg-emerald-500/20 text-emerald-400' }} text-[10px] font-black uppercase px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span
+                                    class="w-1.5 h-1.5 {{ 'bg-rose-500' if is_down else 'bg-emerald-500' }} rounded-full"></span>
+                                {{ 'Down' if is_down else 'Working' }}
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-[11px] text-slate-400">
+                            <p><span class="text-slate-200">Software:</span> <span class="pc-software">Loading...</span>
+                            </p>
+                            <p><span class="text-slate-200">Specs:</span> <span class="pc-specs">Loading...</span></p>
+                            <p><span class="text-slate-200">Maintenance:</span> 2026-03-02</p>
+                        </div>
+                        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-900 rotate-45"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h2 class="text-xl font-extrabold mb-4">Installed Software</h2>
+                <div class="relative mb-4">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                    <input id="software-search"
+                        class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl py-2 pl-10 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary/20"
+                        placeholder="Find software..." type="text" />
+                </div>
+                <div class="grid grid-cols-2 gap-3" id="software-list">
+                    <div class="software-item flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                        data-software="VS Code">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">VS Code</span>
+                        <span class="text-[10px] font-black text-slate-400">18 PCs</span>
+                    </div>
+                    <div class="software-item flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                        data-software="Python">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">Python</span>
+                        <span class="text-[10px] font-black text-slate-400">18 PCs</span>
+                    </div>
+                    <div class="software-item flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                        data-software="MATLAB">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">MATLAB</span>
+                        <span class="text-[10px] font-black text-slate-400">12 PCs</span>
+                    </div>
+                    <div class="software-item flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                        data-software="Git">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200">Git</span>
+                        <span class="text-[10px] font-black text-slate-400">18 PCs</span>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                <h2 class="text-xl font-extrabold mb-6">Quick Actions</h2>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button
+                            class="flex items-center justify-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-primary hover:text-white transition-all group">
+                            <span class="material-symbols-outlined text-lg">download</span>
+                            <span>Download Map</span>
+                        </button>
+                        <button
+                            class="flex items-center justify-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-primary hover:text-white transition-all group">
+                            <span class="material-symbols-outlined text-lg">calendar_month</span>
+                            <span>Timetable</span>
+                        </button>
+                    </div>
+                    <a href="{{ url_for('student.raise_complaint') }}"
+                        class="w-full flex items-center justify-center gap-3 p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/20 rounded-2xl text-xs font-bold text-rose-600 hover:bg-rose-500 hover:text-white transition-all group">
+                        <span class="material-symbols-outlined text-lg">error</span>
+                        <span>Report Lab Issue</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="lg:w-1/4 space-y-6">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <h2 class="text-xl font-extrabold mb-6">Lab Information</h2>
+            <div class="space-y-6">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Lab Name</p>
+                    <p class="font-extrabold text-slate-800 dark:text-slate-100">Lab {{ layout_data.name if
+                        layout_data else 'Layout' }}</p>
+                    <p class="text-xs text-slate-500 mt-2 leading-relaxed">High-performance environment for advanced
+                        coding and software development tasks.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-primary text-xl">schedule</span>
+                        <div>
+                            <p class="text-xs font-bold text-slate-600 dark:text-slate-300">09:00 - 18:00</p>
+                            <p class="text-[10px] text-slate-400 font-medium">Daily Availability</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-primary text-xl">person</span>
+                        <div>
+                            <p class="text-xs font-bold text-slate-600 dark:text-slate-300">Prof. Sharma</p>
+                            <p class="text-[10px] text-slate-400 font-medium">Lab In-charge</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary text-xl">mail</span>
+                        <p class="text-xs font-bold text-slate-600 dark:text-slate-300">lab-support@college.edu</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <h2 class="text-xl font-extrabold mb-6">Current Status</h2>
+            <div class="flex flex-col items-center">
+                <div class="relative w-40 h-40 flex items-center justify-center">
+                    <div class="circular-gauge absolute inset-0 rounded-full"></div>
+                    <div class="text-center z-10">
+                        <p class="text-3xl font-black text-slate-800 dark:text-slate-100">83%</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Working</p>
+                    </div>
+                </div>
+                <div class="w-full mt-8 space-y-4">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Available PCs</p>
+                            <p class="text-xl font-black text-emerald-500">15 <span
+                                    class="text-xs font-bold text-slate-400">/ 18</span></p>
+                        </div>
+                        <span class="text-[10px] font-bold text-rose-500 uppercase">3 Maintenance</span>
+                    </div>
+                    <div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                        <div class="h-full bg-emerald-500 rounded-full" style="width: 83%"></div>
+                        <div class="h-full bg-rose-500" style="width: 17%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // PC Data Mapping (Frontend solution for missing backend fields)
+        const pcData = {
+            'A1': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'A2': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'A3': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'A4': { software: ['VS Code', 'Python', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'A5': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'A6': { software: ['VS Code', 'Python', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'B1': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'B2': { software: ['VS Code', 'Python', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'B3': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'B4': { software: ['VS Code', 'Python', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'B5': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'B6': { software: ['VS Code', 'Python', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'C1': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'C2': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'C3': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'C4': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'C5': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' },
+            'C6': { software: ['VS Code', 'Python', 'MATLAB', 'Git'], specs: 'Intel i5-11400, 16GB, 512GB SSD' }
+        };
+
+        const pcContainers = document.querySelectorAll('.pc-container');
+        const swFilter = document.getElementById('software-filter');
+        const swItems = document.querySelectorAll('.software-item');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // Initialize tooltips with mapped data
+        pcContainers.forEach(container => {
+            const pcId = container.dataset.pcId;
+            const data = pcData[pcId] || { software: [], specs: 'N/A' };
+
+            container.querySelector('.pc-software').textContent = data.software.join(', ');
+            container.querySelector('.pc-specs').textContent = data.specs;
+
+            const btn = container.querySelector('.pc-btn');
+            const tooltip = container.querySelector('.pc-tooltip');
+
+            // Toggle tooltip on click
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Close all other tooltips
+                document.querySelectorAll('.pc-tooltip').forEach(t => {
+                    if (t !== tooltip) t.classList.add('hidden');
+                });
+                tooltip.classList.toggle('hidden');
+            });
+        });
+
+        // Close tooltips when clicking away
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.pc-tooltip').forEach(t => t.classList.add('hidden'));
+        });
+
+        // Software Filtering Logic
+        function applySoftwareFilter(software) {
+            pcContainers.forEach(container => {
+                const pcId = container.dataset.pcId;
+                const data = pcData[pcId];
+                const btn = container.querySelector('.pc-btn');
+
+                if (software && data && data.software.includes(software)) {
+                    btn.classList.add('system-highlight');
+                } else {
+                    btn.classList.remove('system-highlight');
+                }
+            });
+        }
+
+        swFilter.addEventListener('change', (e) => {
+            applySoftwareFilter(e.target.value);
+        });
+
+        swItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const sw = item.dataset.software;
+                swFilter.value = sw;
+                applySoftwareFilter(sw);
+            });
+        });
+
+        // Status Filtering (Working / Not Working)
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // UI update
+                filterBtns.forEach(b => {
+                    b.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'active');
+                    b.classList.add('text-slate-500');
+                });
+                btn.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'active');
+                btn.classList.remove('text-slate-500');
+
+                const filter = btn.id; // filter-all, filter-working, filter-down
+                pcContainers.forEach(container => {
+                    const status = container.dataset.status;
+                    if (filter === 'filter-all') {
+                        container.style.display = 'block';
+                    } else if (filter === 'filter-working') {
+                        container.style.display = status === 'working' ? 'block' : 'none';
+                    } else if (filter === 'filter-down') {
+                        container.style.display = status === 'down' ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+
+        // Software Search logic
+        const pcSearch = document.getElementById('software-search');
+        pcSearch.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            swItems.forEach(item => {
+                const text = item.querySelector('span').textContent.toLowerCase();
+                item.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}

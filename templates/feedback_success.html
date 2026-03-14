@@ -1,0 +1,69 @@
+{% extends "layouts/student_base.html" %}
+
+{% block title %}Feedback Submitted - AcademicGov{% endblock %}
+
+{% block content %}
+<div class="min-h-full flex items-center justify-center p-6">
+    <div class="max-w-md w-full">
+        <div class="info-card p-8 text-center relative overflow-hidden">
+            <!-- Background Accent -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/5 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl"></div>
+
+            <!-- Success Icon -->
+            <div class="relative inline-flex items-center justify-center mb-8">
+                <div class="absolute inset-0 bg-emerald-100 rounded-2xl rotate-6 animate-pulse"></div>
+                <div
+                    class="relative w-16 h-16 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                    <span class="material-symbols-outlined text-3xl font-bold">check_circle</span>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <h1 class="text-2xl font-extrabold text-slate-900 mb-2">Thank You!</h1>
+            <p class="text-slate-500 font-medium mb-8">Your feedback has been submitted anonymously and helps us
+                improve.</p>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-1 gap-4 mb-8">
+                <div
+                    class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 group transition-all hover:bg-white hover:border-indigo-100 hover:shadow-sm">
+                    <div
+                        class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-indigo-500 shadow-sm transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined font-light">shield</span>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-bold text-slate-900">100% Anonymous</p>
+                        <p class="text-[10px] text-slate-500">Your identity is fully protected</p>
+                    </div>
+                </div>
+                <div
+                    class="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 group transition-all hover:bg-white hover:border-emerald-100 hover:shadow-sm">
+                    <div
+                        class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-emerald-500 shadow-sm transition-transform group-hover:scale-110">
+                        <span class="material-symbols-outlined font-light">analytics</span>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-xs font-bold text-slate-900">Sentiment Analysis</p>
+                        <p class="text-[10px] text-slate-500">Processed for institutional growth</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-col gap-3">
+                <a href="{{ url_for('student.dashboard') }}"
+                    class="inline-flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                    <span class="material-symbols-outlined text-lg">home</span>
+                    Back to Dashboard
+                </a>
+                <a href="{{ url_for('student.academic_feedback') }}"
+                    class="inline-flex items-center justify-center gap-2 bg-white text-slate-600 px-6 py-3 rounded-xl font-bold text-sm border border-slate-200 hover:bg-slate-50 transition-all hover:-translate-y-0.5 active:translate-y-0">
+                    <span class="material-symbols-outlined text-lg">add</span>
+                    Submit Another
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

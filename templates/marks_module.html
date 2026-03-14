@@ -1,0 +1,308 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'marks' %}
+
+{% block title %}{{ record.subject_name }} Analysis | AcademicGov{% endblock %}
+
+{% block main_content %}
+<style>
+    .info-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        width: 100%;
+    }
+
+    .dark .info-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .performance-banner {
+        background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+        border-radius: 24px;
+        padding: 2.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .performance-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        filter: blur(60px);
+    }
+
+    .component-row {
+        padding: 1.25rem;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dark .component-row {
+        border-bottom-color: rgba(51, 65, 85, 0.3);
+    }
+
+    .component-row:last-child {
+        border-bottom: none;
+    }
+
+    .icon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .recheck-btn {
+        padding: 0.75rem 1.5rem;
+        background: white;
+        color: #0ea5e9;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.3s;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .recheck-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        background: #f8fafc;
+    }
+</style>
+
+<div class="max-w-7xl mx-auto space-y-8 w-full">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <a class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500"
+                    href="{{ url_for('student.marks_overview') }}">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                </a>
+                <span
+                    class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-indigo-100 dark:border-indigo-800/50">
+                    Subject Metrics
+                </span>
+            </div>
+            <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{{ record.subject_name }}</h2>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
+        <!-- Main Performance Card -->
+        <div class="lg:col-span-8 space-y-8">
+            <div class="performance-banner">
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div>
+                        <p class="text-indigo-100 font-bold uppercase tracking-widest text-[10px] mb-2 opacity-80">
+                            Cumulative Achievement</p>
+                        <h1 class="text-3xl font-black mb-1">{{ total_obtained }}<span
+                                class="text-2xl text-white/60 ml-1">/
+                                {{ total_max }}</span></h1>
+                        {% set pct = (total_obtained / total_max * 100)|round(1) if total_max > 0 else 0 %}
+                        <div class="flex items-center gap-3 mt-4">
+                            <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-black">
+                                {{ pct }}% Proficiency
+                            </span>
+                            <span class="text-indigo-100/80 text-xs font-medium italic">
+                                {% if pct >= 75 %}Outstanding Talent{% elif pct >= 60 %}Strong Performance{% elif pct >=
+                                40 %}Satisfactory{% else %}Improvement Needed{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="requestRecheck()" class="recheck-btn group flex items-center gap-2">
+                        <span
+                            class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">replay</span>
+                        Request Recheck
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <div class="info-card p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">
+                        Evaluation Cycle</h3>
+                    <div class="flex gap-2">
+                        <span class="stat-badge bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20">Continuous
+                            Evaluation</span>
+                    </div>
+                </div>
+                <div class="w-full h-[300px] relative">
+                    <canvas id="componentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Component List -->
+        <div class="lg:col-span-4 space-y-8">
+            <div class="info-card overflow-hidden">
+                <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800">
+                    <h3 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">
+                        Component
+                        Weightage</h3>
+                </div>
+                <div class="p-2">
+                    <div class="component-row">
+                        <div class="flex items-center gap-4">
+                            <div class="icon-box bg-sky-50 dark:bg-sky-900/30 text-sky-600">
+                                <span class="material-symbols-outlined text-xl">edit_note</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-200 leading-none mb-1">
+                                    Internals</p>
+                                <p class="text-[10px] text-slate-400 font-medium">Sessionals & Vivas</p>
+                            </div>
+                        </div>
+                        <p class="text-sm font-black text-slate-800 dark:text-white">{{ record.internal_marks }}<span
+                                class="text-slate-400 font-normal">/{{ max_internal }}</span></p>
+                    </div>
+
+                    <div class="component-row">
+                        <div class="flex items-center gap-4">
+                            <div class="icon-box bg-purple-50 dark:bg-purple-900/30 text-purple-600">
+                                <span class="material-symbols-outlined text-xl">assignment</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-200 leading-none mb-1">
+                                    Assignments</p>
+                                <p class="text-[10px] text-slate-400 font-medium">Practicals & Submission</p>
+                            </div>
+                        </div>
+                        <p class="text-sm font-black text-slate-800 dark:text-white">{{ record.assignment_marks }}<span
+                                class="text-slate-400 font-normal">/{{ max_assignment }}</span></p>
+                    </div>
+
+                    <div class="component-row">
+                        <div class="flex items-center gap-4">
+                            <div class="icon-box bg-amber-50 dark:bg-amber-900/30 text-amber-600">
+                                <span class="material-symbols-outlined text-xl">school</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-200 leading-none mb-1">
+                                    Semester
+                                    Exams</p>
+                                <p class="text-[10px] text-slate-400 font-medium">Final Assessment</p>
+                            </div>
+                        </div>
+                        <p class="text-sm font-black text-slate-800 dark:text-white">{{ record.exam_marks }}<span
+                                class="text-slate-400 font-normal">/{{ max_exam }}</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insight Card -->
+            <div class="info-card p-8 bg-sky-50/50 dark:bg-sky-900/10 border-sky-100 dark:border-sky-900/20">
+                <div
+                    class="w-12 h-12 bg-sky-100 dark:bg-sky-900/40 rounded-2xl flex items-center justify-center text-sky-600 mb-6">
+                    <span class="material-symbols-outlined">lightbulb</span>
+                </div>
+                <h4 class="text-lg font-black text-slate-900 dark:text-white mb-2">Performance Insight</h4>
+                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                    {% if pct >= 80 %}
+                    You're maintaining an elite status in this subject. Keep consistent for the distinction!
+                    {% else %}
+                    Focus on the semester exams to push your aggregate above the 80% mark.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function requestRecheck() {
+        alert("Recheck request for {{ record.subject_name }} has been submitted to the academic office.");
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('componentChart').getContext('2d');
+        const isDark = document.documentElement.classList.contains('dark');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Internals', 'Assignments', 'Exams'],
+                datasets: [{
+                    label: 'Score',
+                    data: [
+                        {{ record.internal_marks or 0 }},
+                {{ record.assignment_marks or 0 }},
+                        {{ record.exam_marks or 0 }}
+                    ],
+        backgroundColor: [
+        'rgba(14, 165, 233, 0.8)',
+        'rgba(168, 85, 247, 0.8)',
+        'rgba(245, 158, 11, 0.8)'
+    ],
+        borderRadius: 12,
+        barThickness: 40
+                }, {
+            label: 'Maximum',
+            data: [
+                {{ max_internal }},
+        {{ max_assignment }},
+        {{ max_exam }}
+                    ],
+        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+        borderRadius: 12,
+        barThickness: 40
+                }]
+            },
+        options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                beginAtZero: true,
+                max: 50,
+                stacked: false,
+                grid: { display: false },
+                ticks: { color: isDark ? '#94a3b8' : '#64748b' }
+            },
+            y: {
+                stacked: true,
+                grid: { display: false },
+                ticks: {
+                    color: isDark ? '#f8fafc' : '#0f172a',
+                    font: { weight: 'bold', family: "'Plus Jakarta Sans', sans-serif" }
+                }
+            }
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                titleColor: isDark ? '#ffffff' : '#0f172a',
+                bodyColor: isDark ? '#ffffff' : '#0f172a',
+                titleFont: { weight: 900 },
+                padding: 12,
+                cornerRadius: 12
+            }
+        }
+    }
+        });
+    });
+</script>
+{% endblock %}

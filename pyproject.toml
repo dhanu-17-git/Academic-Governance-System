@@ -1,0 +1,28 @@
+[project]
+name = "academic-governance-system"
+version = "1.0.0"
+description = "Flask-based campus governance portal for complaint handling, academic tracking, notifications, lab management, and placement workflows."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "Flask==3.0.0",
+  "Flask-Migrate==4.1.0",
+  "Flask-SQLAlchemy==3.1.1",
+  "Flask-WTF==1.2.2",
+  "alembic==1.16.5",
+  "Authlib",
+  "gunicorn==23.0.0",
+  "psycopg[binary]==3.2.10",
+  "python-dotenv==1.2.1",
+  "requests==2.32.5",
+  "sentry-sdk[flask]",
+  "SQLAlchemy==2.0.43",
+  "Werkzeug==3.0.1",
+]
+
+[tool.pytest.ini_options]
+addopts = "-p no:cacheprovider"
+testpaths = ["tests"]
+
+[tool.uv]
+package = false

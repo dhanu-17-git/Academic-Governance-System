@@ -1,0 +1,61 @@
+services:
+  web:
+    build:
+      context: .
+      target: runtime
+    env_file:
+      - .env.production
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-production}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in your environment file}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in your environment file}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "5000"
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    env_file:
+      - .env.production
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-academic_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment file}
+      POSTGRES_DB: ${POSTGRES_DB:-academic_governance}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-academic_app} -d ${POSTGRES_DB:-academic_governance}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    profiles: ["proxy"]
+    depends_on:
+      web:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deployment/certs:/etc/nginx/certs:ro
+    restart: unless-stopped
+
+volumes:
+  pgdata:

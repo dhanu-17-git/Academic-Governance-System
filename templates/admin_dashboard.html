@@ -1,0 +1,570 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'dashboard' %}
+
+{% block title %}Dashboard | AcademicGov{% endblock %}
+
+{% block main_content %}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight">System Overview</h1>
+        <p class="text-slate-500 font-medium mt-1">Real-time statistics and grievance tracking across the
+            campus.</p>
+    </div>
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse"></span>
+        Live Dashboard
+    </p>
+</div>
+
+<!-- Metrics Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Total Complaints -->
+    <div class="metric-card group">
+        <div
+            class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full group-hover:bg-primary/10 transition-colors">
+        </div>
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold text-slate-500 mb-1">Total Grievances</p>
+                <h3 class="text-2xl font-display font-black text-slate-800 tracking-tight">{{
+                    total_complaints }}</h3>
+            </div>
+            <div
+                class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-2xl">forum</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending -->
+    <div class="metric-card group">
+        <div
+            class="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/5 rounded-full group-hover:bg-amber-500/10 transition-colors">
+        </div>
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold text-slate-500 mb-1">Pending Actions</p>
+                <h3 class="text-2xl font-display font-black text-slate-800 tracking-tight">{{ pending_issues
+                    }}</h3>
+            </div>
+            <div
+                class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-amber-500">
+                <span class="material-symbols-outlined text-2xl">pending_actions</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolved -->
+    <div class="metric-card group">
+        <div
+            class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/5 rounded-full group-hover:bg-emerald-500/10 transition-colors">
+        </div>
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold text-slate-500 mb-1">Resolved Issues</p>
+                <h3 class="text-2xl font-display font-black text-slate-800 tracking-tight">{{
+                    resolved_issues }}</h3>
+            </div>
+            <div
+                class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-emerald-500">
+                <span class="material-symbols-outlined text-2xl">task_alt</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="metric-card group">
+        <div
+            class="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/5 rounded-full group-hover:bg-pink-500/10 transition-colors">
+        </div>
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold text-slate-500 mb-1">Platform Rating</p>
+                <div class="flex items-baseline gap-1">
+                    <h3 class="text-2xl font-display font-black text-slate-800 tracking-tight">{{ avg_rating
+                        }}</h3>
+                    <span class="text-sm font-bold text-slate-400">/ 5.0</span>
+                </div>
+            </div>
+            <div
+                class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-pink-500">
+                <span class="material-symbols-outlined text-2xl">kid_star</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="glass-panel p-6 lg:col-span-2 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-display font-bold text-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">analytics</span>
+                Grievances by Category
+            </h3>
+        </div>
+        <div class="relative flex-1 min-h-[300px] w-full">
+            <canvas id="complaintsChart" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-display font-bold text-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-500">donut_large</span>
+                Feedback Sentiment
+            </h3>
+        </div>
+        <div class="relative flex-1 min-h-[300px] w-full flex items-center justify-center">
+            <canvas id="sentimentChart" class="absolute inset-0 max-h-full"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    <!-- Line Chart - Attendance Trend -->
+    <div class="glass-panel p-6 lg:col-span-3 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-display font-bold text-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-indigo-500">timeline</span>
+                Global Attendance Trend
+            </h3>
+            <span
+                class="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100">Last
+                6 Weeks</span>
+        </div>
+        <div class="relative flex-1 min-h-[300px] w-full">
+            <canvas id="attendanceTrendChart" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+
+    <!-- Doughnut Chart - Score Distribution -->
+    <div class="glass-panel p-6 lg:col-span-2 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-display font-bold text-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-500">military_tech</span>
+                Score Distribution
+            </h3>
+        </div>
+        <div class="relative flex-1 min-h-[300px] w-full flex items-center justify-center">
+            <canvas id="scoreDistChart" class="absolute inset-0 max-h-full"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="glass-panel overflow-hidden">
+    <div class="p-6 border-b border-slate-200/60 flex items-center justify-between bg-white/40">
+        <h3 class="text-lg font-display font-bold text-slate-800 flex items-center gap-2">
+            <span class="material-symbols-outlined text-slate-600">table_rows</span>
+            Recent Anonymous Complaints
+        </h3>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50/50">
+                    <th
+                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                        Ref ID</th>
+                    <th
+                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                        Category</th>
+                    <th
+                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 w-1/3">
+                        Description</th>
+                    <th
+                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                        Date</th>
+                    <th
+                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                        Status</th>
+                    <th
+                        class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 text-right">
+                        Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for complaint in recent_complaints %}
+                <tr class="hover:bg-white/60 transition-colors group">
+                    <td class="px-6 py-4">
+                        <code
+                            class="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">{{ complaint.id }}</code>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% set cat_lower = complaint.category.lower() %}
+                        {% set cat_class = 'category-badge cat-' ~ cat_lower %}
+                        <span class="{{ cat_class }}">{{ complaint.category }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-600 font-medium">
+                        {{ complaint.description[:80] }}{% if complaint.description|length > 80 %}...{%
+                        endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm font-semibold text-slate-500">
+                        {{ complaint.created_at.split(' ')[0] if ' ' in complaint.created_at else
+                        complaint.created_at }}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% set stat_lower = complaint.status.lower().replace(' ', '-') %}
+                        <span class="status-badge status-{{ stat_lower }} shadow-sm">
+                            {{ complaint.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="openModal('modal-{{ complaint.id }}')"
+                            class="w-10 h-10 rounded-xl bg-white border border-slate-200 text-primary hover:bg-primary hover:text-white hover:border-primary shadow-sm hover:shadow-md transition-all flex items-center justify-center ml-auto focus:ring-4 focus:ring-primary/20">
+                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Standalone HTML Dialog per complaint -->
+                <dialog id="modal-{{ complaint.id }}"
+                    class="bg-transparent m-auto p-0 rounded-3xl backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm open:animate-slide-up shadow-2xl overflow-visible">
+                    <form method="POST" action="{{ url_for('admin.update_status', complaint_id=complaint.id) }}"
+                        class="w-[90vw] max-w-lg bg-white rounded-3xl overflow-hidden text-left flex flex-col shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white">
+                            <div>
+                                <h3 class="text-2xl font-display font-bold text-slate-900 tracking-tight">Update
+                                    Grievance</h3>
+                                <p class="text-xs font-bold text-indigo-500 mt-1 uppercase tracking-widest">ID: {{
+                                    complaint.id }}</p>
+                            </div>
+                            <button type="button" onclick="closeModal('modal-{{ complaint.id }}')"
+                                class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 shadow-sm hover:bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        <div class="p-8 space-y-6 bg-white">
+                            <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-100 text-indigo-600 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-2xl">category</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Issue
+                                        Category</p>
+                                    <div class="inline-block mt-0.5">
+                                        <span class="{{ cat_class }}">{{ complaint.category }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold uppercase tracking-widest text-slate-700">
+                                    Status Assignment
+                                </label>
+                                <div class="relative">
+                                    <select name="status"
+                                        class="w-full bg-slate-50 border border-slate-200 text-slate-800 font-semibold rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 block p-4 appearance-none outline-none transition-all cursor-pointer">
+                                        <option value="Submitted" {{ 'selected' if complaint.status=='Submitted' else ''
+                                            }}>
+                                            ⚪ Submitted (Awaiting Action)
+                                        </option>
+                                        <option value="Under Review" {{ 'selected' if complaint.status=='Under Review'
+                                            else '' }}>
+                                            🟡 Under Review (In Progress)
+                                        </option>
+                                        <option value="Resolved" {{ 'selected' if complaint.status=='Resolved' else ''
+                                            }}>
+                                            🟢 Resolved & Closed
+                                        </option>
+                                    </select>
+                                    <div
+                                        class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                                        <span class="material-symbols-outlined">expand_more</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold uppercase tracking-widest text-slate-700">
+                                    Official Response
+                                </label>
+                                <textarea name="admin_response" rows="4"
+                                    placeholder="Type a detailed resolution or status update for the student..."
+                                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 block p-4 font-medium outline-none transition-all resize-none placeholder:text-slate-400">{{ complaint.admin_response or '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <div
+                            class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+                            <button type="button" onclick="closeModal('modal-{{ complaint.id }}')"
+                                class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 transition-all hover:-translate-y-0.5">
+                                Commit Update
+                            </button>
+                        </div>
+                    </form>
+                </dialog>
+                {% endfor %}
+                {% if not recent_complaints %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-slate-500 font-medium">
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="material-symbols-outlined text-4xl text-slate-300">inbox</span>
+                            <p>No complaints found in the system.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<style type="text/tailwindcss">
+    .metric-card {
+        @apply relative overflow-hidden glass-panel p-6 transition-transform duration-300 hover:-translate-y-1 hover:shadow-glass-hover;
+    }
+
+    .status-badge {
+        @apply px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider;
+    }
+
+    .status-submitted {
+        @apply bg-blue-100 text-blue-700;
+    }
+
+    .status-under.review,
+    .status-under-review {
+        @apply bg-amber-100 text-amber-700;
+    }
+
+    .status-resolved {
+        @apply bg-emerald-100 text-emerald-700;
+    }
+
+    .category-badge {
+        @apply px-2.5 py-1 rounded-lg text-xs font-semibold;
+    }
+
+    .cat-academic {
+        @apply bg-indigo-50 text-indigo-700 border border-indigo-200;
+    }
+
+    .cat-cleaning {
+        @apply bg-teal-50 text-teal-700 border border-teal-200;
+    }
+
+    .cat-parking {
+        @apply bg-slate-100 text-slate-700 border border-slate-200;
+    }
+
+    .cat-placement {
+        @apply bg-purple-50 text-purple-700 border border-purple-200;
+    }
+
+    .cat-infrastructure {
+        @apply bg-orange-50 text-orange-700 border border-orange-200;
+    }
+
+    .cat-ragging {
+        @apply bg-red-50 text-red-700 border border-red-200;
+    }
+
+    /* Modals */
+    dialog::backdrop {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+    }
+</style>
+<script>
+    // Modal Handlers
+    function openModal(id) {
+        document.getElementById(id).showModal();
+    }
+    function closeModal(id) {
+        document.getElementById(id).close();
+    }
+
+    // Shared Chart Configuration
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#64748b'; // slate-500
+    Chart.defaults.scale.grid.color = 'rgba(0,0,0,0.04)';
+
+    // 1. Complaints by Category
+    const ctxCategories = document.getElementById('complaintsChart').getContext('2d');
+    new Chart(ctxCategories, {
+        type: 'bar',
+        data: {
+            labels: {{ categories | tojson }},
+        datasets: [{
+            label: 'Grievances',
+            data: {{ complaint_counts | tojson }},
+        backgroundColor: 'rgba(79, 70, 229, 0.85)', // primary
+        hoverBackgroundColor: 'rgba(99, 102, 241, 1)',
+        borderRadius: 6,
+        borderSkipped: false,
+        barPercentage: 0.6
+                }]
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#0F172A',
+                padding: 12,
+                cornerRadius: 8,
+                titleFont: { family: 'Plus Jakarta Sans', size: 14 },
+                bodyFont: { size: 13 }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                border: { display: false },
+                ticks: { stepSize: 1, padding: 10 }
+            },
+            x: {
+                border: { display: false },
+                grid: { display: false },
+                ticks: { font: { weight: '600' } }
+            }
+        }
+    }
+        });
+
+    // 2. Sentiment Doughnut
+    const ctxSentiment = document.getElementById('sentimentChart').getContext('2d');
+    new Chart(ctxSentiment, {
+        type: 'doughnut',
+        data: {
+            labels: {{ sentiment_labels | tojson }},
+        datasets: [{
+            data: {{ sentiment_counts | tojson }},
+        backgroundColor: [
+            '#10B981', // emerald
+            '#F59E0B', // amber
+            '#EF4444'  // red
+        ],
+        borderWidth: 0,
+        hoverOffset: 4
+                }]
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 20, usePointStyle: true, boxWidth: 8, font: { weight: '600' } }
+            },
+            tooltip: {
+                backgroundColor: '#0F172A',
+                padding: 12,
+                cornerRadius: 8
+            }
+        }
+    }
+        });
+
+    // 3. Attendance Trend Line Chart
+    const attTrendCtx = document.getElementById('attendanceTrendChart').getContext('2d');
+    new Chart(attTrendCtx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+            datasets: [{
+                label: 'Global Attendance',
+                data: [78, 82, 75, 80, 85, 88],
+                borderColor: '#4F46E5', // primary
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#4F46E5',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0F172A',
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function (context) {
+                            return ` ${context.parsed.y}% Avg`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: 60,
+                    max: 100,
+                    border: { display: false },
+                    ticks: {
+                        callback: val => val + '%',
+                        padding: 10
+                    }
+                },
+                x: {
+                    border: { display: false },
+                    grid: { display: false },
+                    ticks: { font: { weight: '500' } }
+                }
+            }
+        }
+    });
+
+    // 4. Score Distribution Doughnut
+    const scoreCtx = document.getElementById('scoreDistChart').getContext('2d');
+    new Chart(scoreCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Distinction (>75%)', 'First Class (60–75%)', 'Pass (40–60%)', 'Fail (<40%)'],
+            datasets: [{
+                data: [12, 18, 8, 3],
+                backgroundColor: [
+                    '#10B981', // emerald
+                    '#6366F1', // indigo
+                    '#F59E0B', // amber
+                    '#EF4444'  // red
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 15, usePointStyle: true, boxWidth: 8, font: { size: 11, weight: '600' } }
+                },
+                tooltip: {
+                    backgroundColor: '#0F172A',
+                    padding: 12,
+                    cornerRadius: 8
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

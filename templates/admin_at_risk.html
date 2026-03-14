@@ -1,0 +1,128 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'dashboard' %}
+
+{% block title %}At-Risk Students | AcademicGov{% endblock %}
+
+{% block main_content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-rose-500 text-4xl">warning</span>
+            At-Risk Students
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">Algorithmically sorted by lowest attendance percentage.</p>
+    </div>
+    <a href="{{ url_for('admin.admin_dashboard') }}"
+        class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Dashboard
+    </a>
+</div>
+
+<!-- Legend -->
+<div class="flex flex-wrap gap-4 mb-6">
+    <div class="bg-rose-50/80 border border-rose-200/50 px-4 py-2.5 rounded-full flex items-center gap-2 shadow-sm">
+        <div class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></div>
+        <span class="text-xs font-bold uppercase tracking-wider text-rose-700">Critical &lt; 65%</span>
+    </div>
+    <div class="bg-amber-50/80 border border-amber-200/50 px-4 py-2.5 rounded-full flex items-center gap-2 shadow-sm">
+        <div class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-700">At-Risk 65–74%</span>
+    </div>
+    <div
+        class="bg-emerald-50/80 border border-emerald-200/50 px-4 py-2.5 rounded-full flex items-center gap-2 shadow-sm">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">Safe ≥ 75%</span>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="glass-panel overflow-hidden border border-slate-200/60 mb-4">
+    <div class="overflow-x-auto hidden-scroll">
+        <table class="w-full text-left border-collapse min-w-[700px]">
+            <thead>
+                <tr class="bg-slate-100/50">
+                    <th
+                        class="px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 w-16 text-center">
+                        #</th>
+                    <th
+                        class="px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                        Student Email</th>
+                    <th
+                        class="px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 text-center">
+                        Attendance %</th>
+                    <th
+                        class="px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 text-center">
+                        Avg Marks / 100</th>
+                    <th
+                        class="px-5 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 text-center">
+                        Subjects Tracked</th>
+                </tr>
+            </thead>
+            {% if summary %}
+            <tbody class="divide-y divide-slate-100/80">
+                {% for s in summary %}
+                {% set att = s.avg_attendance_pct %}
+                <tr class="group transition-colors
+                    {% if att < 65 %}bg-rose-50/30 hover:bg-rose-50/80
+                    {% elif att < 75 %}bg-amber-50/30 hover:bg-amber-50/80
+                    {% else %}hover:bg-slate-50/80{% endif %}">
+
+                    <td class="px-5 py-4 text-xs font-bold text-slate-400 text-center">
+                        {{ loop.index }}
+                    </td>
+                    <td class="px-5 py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0
+                                {% if att < 65 %}bg-rose-100 text-rose-600
+                                {% elif att < 75 %}bg-amber-100 text-amber-600
+                                {% else %}bg-slate-100 text-slate-500{% endif %}">
+                                {{ s.email[0] | upper }}
+                            </div>
+                            <span class="text-sm font-bold text-slate-800">{{ s.email }}</span>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-[13px] font-black tracking-tight border
+                            {% if att < 65 %}bg-rose-100/80 border-rose-200 text-rose-700
+                            {% elif att < 75 %}bg-amber-100/80 border-amber-200 text-amber-800
+                            {% else %}bg-emerald-100/80 border-emerald-200 text-emerald-700{% endif %}">
+                            {{ att }}%
+                        </span>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <span class="text-sm font-bold text-slate-700">{{ s.avg_marks_total }}</span>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <span
+                            class="w-6 h-6 inline-flex items-center justify-center rounded bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600">
+                            {{ s.num_subjects }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% endif %}
+        </table>
+
+        {% if not summary %}
+        <div class="p-8 text-center flex flex-col items-center justify-center w-full bg-white">
+            <div
+                class="w-14 h-14 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mb-4 shadow-inner">
+                <span class="material-symbols-outlined text-3xl">no_accounts</span>
+            </div>
+            <h4 class="text-lg font-display font-bold text-slate-800 mb-1">No Academic Data</h4>
+            <p class="text-sm font-medium text-slate-500 max-w-sm mx-auto">Students need to login and interact with the
+                system to generate academic and attendance records.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="flex justify-end pr-2">
+    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">
+        Total Evaluated: <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-700 ml-1">{{
+            summary | length }}</span>
+    </span>
+</div>
+{% endblock %}

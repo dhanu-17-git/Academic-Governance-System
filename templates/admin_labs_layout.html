@@ -1,0 +1,168 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'labs' %}
+
+{% block title %}Manage {{ layout_data.lab_name }} | AcademicGov{% endblock %}
+
+{% block main_content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-4xl">build_circle</span>
+            Manage {{ layout_data.lab_name }}
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">Click on any system to toggle its maintenance status in real-time.
+        </p>
+    </div>
+    <a href="{{ url_for('admin.admin_labs_index') }}"
+        class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Back to Labs
+    </a>
+</div>
+
+<!-- Cinema Layout Container -->
+<div class="glass-panel p-8 sm:p-12 mb-10 border-t-4 border-t-primary max-w-5xl mx-auto relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none">
+    </div>
+
+    <div class="relative z-10">
+        <!-- Board Indicator -->
+        <div class="w-full max-w-lg mx-auto mb-16 relative">
+            <div
+                class="h-2 w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent rounded-full shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+            </div>
+            <div class="text-center mt-3">
+                <span
+                    class="text-xs font-bold uppercase tracking-[0.2em] text-primary/80 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[14px]">smart_display</span>
+                    Board This Way
+                </span>
+            </div>
+        </div>
+
+        <!-- Seats Grid -->
+        <div class="flex flex-col gap-6 md:gap-8 items-center">
+            {% for r_char, systems in layout_data.rows.items() %}
+            <div class="flex items-center gap-4 sm:gap-8 w-full justify-center">
+                <!-- Row Label -->
+                <div
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100/50 text-slate-500 font-display font-bold text-sm shrink-0 border border-slate-200/50">
+                    {{ r_char }}
+                </div>
+
+                {% set half = (systems|length / 2)|round(0, 'ceil')|int %}
+
+                <!-- Left Group -->
+                <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+                    {% for sys in systems[:half] %}
+                    <form method="POST" action="{{ url_for('admin.update_lab_status', system_id=sys.id) }}"
+                        class="m-0 p-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status"
+                            value="{{ 'not_working' if sys.status == 'working' else 'working' }}">
+                        <button type="submit" title="{{ sys.system_code }}" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex flex-col items-center justify-center gap-1 transition-all group relative border-2 
+                                {% if sys.status == 'working' %}
+                                    bg-white border-emerald-500/20 text-emerald-600 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-emerald-500/40 hover:bg-emerald-50/50
+                                {% else %}
+                                    bg-rose-50/50 border-rose-200 text-rose-400 opacity-60 hover:opacity-100 hover:shadow-md hover:-translate-y-1 hover:bg-rose-100/50 hover:text-rose-600
+                                {% endif %}">
+
+                            {% if sys.status == 'working' %}
+                            <span class="material-symbols-outlined text-[20px] sm:text-[24px]">desktop_windows</span>
+                            <span class="text-[10px] sm:text-[11px] font-bold">{{ sys.seat_number }}</span>
+
+                            <!-- Tooltip -->
+                            <div
+                                class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg z-20">
+                                Mark as Broken
+                            </div>
+                            {% else %}
+                            <span
+                                class="material-symbols-outlined text-[20px] sm:text-[24px]">desktop_access_disabled</span>
+                            <span class="text-[10px] sm:text-[11px] font-bold">{{ sys.seat_number }}</span>
+
+                            <div
+                                class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm z-10">
+                                <span class="material-symbols-outlined text-[12px] font-bold">close</span>
+                            </div>
+
+                            <!-- Tooltip -->
+                            <div
+                                class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg z-20">
+                                Mark as Fixed
+                            </div>
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
+
+                <!-- Center Aisle (Spacing) -->
+                <div class="w-4 sm:w-8 shrink-0"></div>
+
+                <!-- Right Group -->
+                <div class="flex flex-wrap justify-center gap-2 sm:gap-3">
+                    {% for sys in systems[half:] %}
+                    <form method="POST" action="{{ url_for('admin.update_lab_status', system_id=sys.id) }}"
+                        class="m-0 p-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status"
+                            value="{{ 'not_working' if sys.status == 'working' else 'working' }}">
+                        <button type="submit" title="{{ sys.system_code }}" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex flex-col items-center justify-center gap-1 transition-all group relative border-2 
+                                {% if sys.status == 'working' %}
+                                    bg-white border-emerald-500/20 text-emerald-600 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-emerald-500/40 hover:bg-emerald-50/50
+                                {% else %}
+                                    bg-rose-50/50 border-rose-200 text-rose-400 opacity-60 hover:opacity-100 hover:shadow-md hover:-translate-y-1 hover:bg-rose-100/50 hover:text-rose-600
+                                {% endif %}">
+
+                            {% if sys.status == 'working' %}
+                            <span class="material-symbols-outlined text-[20px] sm:text-[24px]">desktop_windows</span>
+                            <span class="text-[10px] sm:text-[11px] font-bold">{{ sys.seat_number }}</span>
+
+                            <div
+                                class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg z-20">
+                                Mark as Broken
+                            </div>
+                            {% else %}
+                            <span
+                                class="material-symbols-outlined text-[20px] sm:text-[24px]">desktop_access_disabled</span>
+                            <span class="text-[10px] sm:text-[11px] font-bold">{{ sys.seat_number }}</span>
+
+                            <div
+                                class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm z-10">
+                                <span class="material-symbols-outlined text-[12px] font-bold">close</span>
+                            </div>
+
+                            <div
+                                class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg z-20">
+                                Mark as Fixed
+                            </div>
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-12 pt-6 border-t border-slate-200/50 flex flex-wrap items-center justify-center gap-8">
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded border-2 border-emerald-500/30 bg-white"></div>
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Active & Ready</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-4 h-4 rounded border-2 border-rose-200 bg-rose-50/50 relative flex items-center justify-center">
+                    <div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white">
+                    </div>
+                </div>
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Needs Maintenance</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

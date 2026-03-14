@@ -1,0 +1,312 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'attendance' %}
+
+{% block title %}Attendance Analytics | AcademicGov{% endblock %}
+
+{% block main_content %}
+<style>
+    .info-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .dark .info-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-card:hover {
+        border-color: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1);
+    }
+
+    .attendance-table th {
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #94a3b8;
+        padding-bottom: 1rem;
+        border: none;
+    }
+
+    .attendance-table td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        border-top: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    .dark .attendance-table td {
+        border-top-color: rgba(51, 65, 85, 0.3);
+    }
+
+    .view-details-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #475569;
+    }
+
+    .dark .view-details-btn {
+        background: #1e293b;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+
+    .view-details-btn:hover {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+        transform: translateY(-1px);
+    }
+
+    .stat-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+</style>
+
+<div class="max-w-6xl mx-auto space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <a class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500"
+                    href="{{ url_for('student.dashboard') }}">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                </a>
+                <span
+                    class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-emerald-100 dark:border-emerald-800/50">
+                    <span class="material-symbols-outlined text-xs">analytics</span>
+                    Live Analytics
+                </span>
+            </div>
+            <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Attendance Overview</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">Tracking your academic presence
+                across all subjects.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="info-card px-6 py-3 flex items-center gap-4">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-sm">
+                    <span class="material-symbols-outlined">chart_data</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Overall
+                    </p>
+                    <p class="text-xl font-black text-indigo-600 dark:text-indigo-400 leading-none">{{ overall_pct }}%
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Chart -->
+    <div class="info-card p-6 lg:p-10">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">Attendance
+                Trends</h3>
+            <div class="flex gap-2">
+                <div class="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                    <div class="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                    <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">Subject-wise %</span>
+                </div>
+            </div>
+        </div>
+        <div class="w-full h-[320px] relative">
+            <canvas id="overallAttendanceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Subjects Table -->
+    <div class="info-card overflow-hidden">
+        <div class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <h3 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">Registered
+                Courses</h3>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ records|length }}
+                Subjects</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full attendance-table text-left">
+                <thead class="bg-slate-50/50 dark:bg-slate-900/30">
+                    <tr>
+                        <th class="px-8">Course Code</th>
+                        <th>Subject Name</th>
+                        <th>Status</th>
+                        <th class="text-right px-8">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in records %}
+                    <tr class="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="px-8">
+                            <span class="font-black text-slate-900 dark:text-white text-xs">BCS-{{ item.subject_id }}0{{
+                                loop.index }}</span>
+                        </td>
+                        <td>
+                            <p class="font-bold text-slate-700 dark:text-slate-300 text-sm">{{ item.subject_name }}</p>
+                            <p class="text-[10px] text-slate-400 font-medium">B.Tech Computer Science</p>
+                        </td>
+                        <td>
+                            {% set pct = 0 %}
+                            {% for i in range(labels|length) %}
+                            {% if labels[i] == item.subject_name %}
+                            {% set pct = percentages[i] %}
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="stat-badge {% if pct >= 75 %}bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20{% else %}bg-rose-50 text-rose-600 dark:bg-rose-900/20{% endif %}">
+                                    {{ pct }}%
+                                </span>
+                                <div
+                                    class="w-24 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden hidden sm:block">
+                                    <div class="h-full {% if pct >= 75 %}bg-emerald-500{% else %}bg-rose-500{% endif %} rounded-full transition-all duration-1000"
+                                        style="width: {{ pct }}%"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td class="text-right px-8">
+                            <a class="view-details-btn"
+                                href="{{ url_for('student.attendance_details', subject_id=item.subject_id) }}">
+                                View Details
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('overallAttendanceChart').getContext('2d');
+        const labels = JSON.parse('{{ labels | tojson | safe }}');
+        const data = JSON.parse('{{ percentages | tojson | safe }}');
+
+        // Check if dark mode is active
+        const isDark = document.documentElement.classList.contains('dark');
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+        const textColor = isDark ? '#94a3b8' : '#64748b';
+
+        // Create a beautiful gradient
+        let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.25)'); // Indigo base
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Attendance %',
+                    data: data,
+                    backgroundColor: gradient,
+                    borderColor: '#4f46e5',
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.45,
+                    pointBackgroundColor: isDark ? '#ffffff' : '#4f46e5',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 4,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#4f46e5',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 4,
+                    shadowColor: 'rgba(79, 70, 229, 0.4)',
+                    shadowBlur: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: textColor,
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 10,
+                                weight: 700
+                            },
+                            padding: 10
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: gridColor,
+                            borderDash: [8, 4],
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: textColor,
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 10,
+                                weight: 700
+                            },
+                            padding: 10,
+                            stepSize: 20,
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        titleColor: isDark ? '#ffffff' : '#0f172a',
+                        bodyColor: isDark ? '#ffffff' : '#0f172a',
+                        titleFont: { size: 12, family: "'Plus Jakarta Sans', sans-serif", weight: 900 },
+                        bodyFont: { size: 14, family: "'Plus Jakarta Sans', sans-serif", weight: 800 },
+                        padding: 16,
+                        cornerRadius: 16,
+                        displayColors: false,
+                        borderColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function (context) {
+                                return 'Presence: ' + context.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

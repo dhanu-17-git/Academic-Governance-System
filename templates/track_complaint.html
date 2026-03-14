@@ -1,0 +1,350 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'complaints' %}
+
+{% block title %}Track Complaint | AcademicGov{% endblock %}
+
+{% block main_content %}
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        transition: all 0.3s ease;
+    }
+
+    .dark .glass-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-input {
+        display: block;
+        width: 100%;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 1rem 1.25rem;
+        transition: all 0.2s;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+    }
+
+    .dark .form-input {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: #334155;
+        color: white;
+    }
+
+    .form-input:focus {
+        border-color: #6366f1;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-btn {
+        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.75rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border: none;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Status Tracker */
+    .status-timeline {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        padding-top: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .status-timeline::before {
+        content: '';
+        position: absolute;
+        top: 3.5rem;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        background: #e2e8f0;
+        z-index: 1;
+        border-radius: 2px;
+    }
+
+    .dark .status-timeline::before {
+        background: #334155;
+    }
+
+    .status-step {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: 30%;
+    }
+
+    .step-circle {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: white;
+        border: 4px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .dark .step-circle {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+    .status-step.completed .step-circle {
+        background: #4f46e5;
+        border-color: #4f46e5;
+        color: white;
+        box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+    }
+
+    .status-step.active .step-circle {
+        background: white;
+        border-color: #4f46e5;
+        color: #4f46e5;
+        box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
+        animation: pulse 2s infinite;
+    }
+
+    .dark .status-step.active .step-circle {
+        background: #1e293b;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+        }
+    }
+
+    .step-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+        letter-spacing: 0.05em;
+    }
+
+    .status-step.completed .step-label,
+    .status-step.active .step-label {
+        color: #4f46e5;
+    }
+
+    .complaint-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(79, 70, 229, 0.1);
+        border: 1px solid rgba(79, 70, 229, 0.2);
+        border-radius: 99px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #4f46e5;
+    }
+
+    .dark .complaint-meta-pill {
+        background: rgba(99, 102, 241, 0.1);
+        color: #a5b4fc;
+    }
+</style>
+
+<div class="max-w-4xl mx-auto py-8">
+    <div class="text-center mb-10">
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Track Your Issue</h2>
+        <p class="text-slate-500 font-medium mt-2 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-indigo-500">verified_user</span>
+            Anonymous Tracking Portal
+        </p>
+    </div>
+
+    <!-- Tracking Header/Search -->
+    <div class="glass-card p-6 lg:p-8 mb-8">
+        <form action="{{ url_for('student.track_complaint') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <span
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                    <input type="text" name="complaint_id" class="form-input pl-12"
+                        placeholder="Enter your Complaint ID (e.g. COMP-12345)" required
+                        value="{{ request.form.get('complaint_id', '') }}">
+                </div>
+                <button type="submit" class="search-btn">
+                    <span class="material-symbols-outlined">analytics</span>
+                    Track Status
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if complaint %}
+    <div class="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-500">
+        <!-- Status Visualizer -->
+        <div class="glass-card p-8 lg:p-12">
+            <div class="flex items-center justify-between mb-8 pb-8 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                    <span class="complaint-meta-pill">
+                        <span class="material-symbols-outlined text-sm">tag</span>
+                        {{ complaint.id }}
+                    </span>
+                    <h3 class="text-2xl font-black text-slate-900 dark:text-white mt-3">{{ complaint.category }}
+                        Complaint</h3>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last Updated</p>
+                    <p class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ complaint.updated_at or
+                        complaint.created_at }}</p>
+                </div>
+            </div>
+
+            <div class="status-timeline">
+                <!-- Step 1: Submitted -->
+                <div class="status-step completed">
+                    <div class="step-circle">
+                        <span class="material-symbols-outlined font-bold">check</span>
+                    </div>
+                    <span class="step-label">Submitted</span>
+                </div>
+
+                <!-- Step 2: Under Review -->
+                {% set is_review = complaint.status in ['Under Review', 'Resolved'] %}
+                <div
+                    class="status-step {{ 'completed' if complaint.status == 'Resolved' else ('active' if complaint.status == 'Under Review' else '') }}">
+                    <div class="step-circle">
+                        <span class="material-symbols-outlined font-bold">visibility</span>
+                    </div>
+                    <span class="step-label">Under Review</span>
+                </div>
+
+                <!-- Step 3: Resolved -->
+                <div class="status-step {{ 'completed' if complaint.status == 'Resolved' else '' }}">
+                    <div class="step-circle">
+                        <span class="material-symbols-outlined font-bold">flag</span>
+                    </div>
+                    <span class="step-label">Resolved</span>
+                </div>
+            </div>
+
+            <div
+                class="bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl p-6 mt-6 flex gap-5 border border-indigo-100/50 dark:border-indigo-800/20">
+                <div
+                    class="flex-shrink-0 w-12 h-12 bg-white dark:bg-slate-900 rounded-xl shadow-sm flex items-center justify-center">
+                    <span class="material-symbols-outlined text-indigo-600 font-bold">info</span>
+                </div>
+                <div>
+                    <h4 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-tight">Current
+                        Status: {{ complaint.status.upper() }}</h4>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium mt-1">
+                        {% if complaint.status == 'Submitted' %}
+                        Your complaint is in the queue. An administrator will review it shortly.
+                        {% elif complaint.status == 'Under Review' %}
+                        An administrator is currently investigating your report.
+                        {% else %}
+                        The issue has been addressed. See the response below for details.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Complaint Summary -->
+            <div class="glass-card p-8">
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">description</span>
+                    Original Report
+                </h4>
+                <div
+                    class="bg-white/50 dark:bg-slate-900/50 rounded-2xl p-5 border border-slate-100 dark:border-slate-800/50">
+                    <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-medium italic">
+                        "{{ complaint.description }}"
+                    </p>
+                </div>
+            </div>
+
+            <!-- Admin Response -->
+            <div class="glass-card p-8 border-indigo-200 dark:border-indigo-900/30">
+                <h4 class="text-xs font-black text-indigo-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">quickreply</span>
+                    Administrative Action
+                </h4>
+                {% if complaint.admin_response %}
+                <div
+                    class="bg-indigo-50/50 dark:bg-indigo-900/30 rounded-2xl p-5 border border-indigo-100 dark:border-indigo-800/50">
+                    <p class="text-sm leading-relaxed text-indigo-900 dark:text-indigo-200 font-bold">
+                        {{ complaint.admin_response }}
+                    </p>
+                </div>
+                {% else %}
+                <div class="h-32 flex flex-col items-center justify-center text-slate-400 gap-2">
+                    <span class="material-symbols-outlined text-3xl opacity-50">pending_actions</span>
+                    <p class="text-[10px] font-bold uppercase tracking-widest">Waiting for response</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% elif request.method == 'POST' %}
+    <div class="glass-card p-8 text-center animate-in zoom-in-95 duration-300">
+        <div
+            class="w-14 h-14 bg-rose-50 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-rose-500 text-3xl">warning</span>
+        </div>
+        <h3 class="text-xl font-black text-slate-800 dark:text-white">Complaint ID Not Found</h3>
+        <p class="text-slate-500 font-medium text-sm mt-2">Please double-check the ID you received when submitting.</p>
+        <button onclick="window.location.reload()"
+            class="mt-8 text-indigo-600 font-bold text-xs uppercase tracking-widest hover:text-indigo-700">
+            Try Again
+        </button>
+    </div>
+    {% else %}
+    <!-- Initial State Placeholder -->
+    <div class="glass-card p-10 text-center">
+        <div
+            class="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner border border-slate-100 dark:border-slate-700">
+            <span class="material-symbols-outlined text-slate-300 text-4xl">search_check</span>
+        </div>
+        <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Ready to Check Status</h3>
+        <p class="text-slate-500 font-medium max-w-sm mx-auto mt-3">
+            Enter your unique tracking number above to see the latest progress on your submitted issue.
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

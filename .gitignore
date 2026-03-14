@@ -1,0 +1,56 @@
+# ── Python ────────────────────────────────────────────────────
+venv/
+.venv/
+.uv-cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── Environment / Secrets ────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.production.example
+!.env.staging.example
+
+# ── Database ─────────────────────────────────────────────────
+*.db
+
+# ── Logs ─────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Uploads ──────────────────────────────────────────────────
+uploads/
+static/uploads/
+
+# ── Node ─────────────────────────────────────────────────────
+node_modules/
+
+# ── Testing ──────────────────────────────────────────────────
+.pytest_cache/
+.pytest_state/
+.tmp_test_artifacts/
+pytest-cache-files-*
+
+# ── IDE / OS ─────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ── Project artifacts (not for distribution) ─────────────────
+codex_reports/
+dashboard_ui_snapshot/
+stitch_academic_governance_ai_dev_toolkit_dashboard/
+ai-tool-kit/
+replace_error.log
+tailwind_error.log
+stitch_report.txt
+stitch_map.txt
+stitch_placement_profile.html
+local_data/
+
+# ── Deployment secrets ───────────────────────────────────────
+deployment/certs/*.pem

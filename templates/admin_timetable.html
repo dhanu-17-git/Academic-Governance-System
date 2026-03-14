@@ -1,0 +1,182 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'timetable' %}
+
+{% block title %}Timetable Manager | AcademicGov{% endblock %}
+
+{% block main_content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-4xl">calendar_month</span>
+            Timetable Manager
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">Configure the weekly class schedule across all subjects.</p>
+    </div>
+</div>
+
+<!-- Add Slot Form -->
+<div class="glass-panel p-6 sm:p-8 mb-10 border-l-4 border-l-primary relative overflow-hidden">
+    <div class="absolute top-0 right-0 p-8 opacity-5">
+        <span class="material-symbols-outlined text-[120px]">add_circle</span>
+    </div>
+
+    <div class="relative z-10">
+        <h2 class="text-xl font-display font-bold text-slate-800 flex items-center gap-2 mb-6">
+            <span class="material-symbols-outlined text-primary">add_circle</span>
+            Add Timetable Slot
+        </h2>
+
+        <form method="POST"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1.5fr_1.5fr_1fr_auto] gap-4 items-end">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 block">Day</label>
+                <div class="relative">
+                    <select name="day_of_week" required
+                        class="w-full bg-white border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block p-3 appearance-none outline-none shadow-sm transition-shadow">
+                        <option value="">-- Day --</option>
+                        {% for day in valid_days %}
+                        <option value="{{ day }}">{{ day }}</option>
+                        {% endfor %}
+                    </select>
+                    <span
+                        class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl">expand_more</span>
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 block">Time Slot</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">schedule</span>
+                    <input type="text" name="time_slot" placeholder="e.g. 09:00 - 10:00 AM" required maxlength="30"
+                        class="w-full bg-white border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block p-3 pl-10 outline-none shadow-sm transition-shadow">
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 block">Subject</label>
+                <div class="relative">
+                    <select name="subject_id" required
+                        class="w-full bg-white border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block p-3 appearance-none outline-none shadow-sm transition-shadow">
+                        <option value="">-- Subject --</option>
+                        {% for s in subjects %}
+                        <option value="{{ s.id }}">{{ s.subject_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <span
+                        class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl">expand_more</span>
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 block">Room</label>
+                <div class="relative">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[18px]">meeting_room</span>
+                    <input type="text" name="room" placeholder="e.g. Room 201" maxlength="50"
+                        class="w-full bg-white border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary block p-3 pl-10 outline-none shadow-sm transition-shadow">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                    class="w-full px-5 py-3 rounded-xl text-sm font-bold text-white bg-primary hover:bg-secondary shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                    Add Slot
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Weekly Grid -->
+<h2 class="text-xl font-display font-bold text-slate-800 flex items-center gap-2 mb-6">
+    <span class="material-symbols-outlined text-primary">view_week</span>
+    Weekly Schedule
+</h2>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    {% for day in valid_days %}
+    <div class="glass-panel overflow-hidden flex flex-col h-full hover:border-primary/30 transition-colors">
+        <div class="p-4 border-b border-slate-200/60 bg-white/50 flex justify-between items-center">
+            <h3 class="font-display font-bold text-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">today</span>
+                {{ day }}
+            </h3>
+            <span
+                class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                {{ timetable_by_day[day] | length }} slot{% if timetable_by_day[day] | length != 1 %}s{% endif %}
+            </span>
+        </div>
+
+        <div class="flex-1 bg-slate-50/30">
+            {% if timetable_by_day[day] %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/50">
+                            <th
+                                class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                                Time</th>
+                            <th
+                                class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                                Subject</th>
+                            <th
+                                class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                                Room</th>
+                            <th
+                                class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 text-right">
+                                Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100/80">
+                        {% for slot in timetable_by_day[day] %}
+                        <tr class="hover:bg-white/60 transition-colors group">
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-700 whitespace-nowrap">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[14px] text-slate-400">schedule</span>
+                                    {{ slot.time_slot }}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm font-bold text-slate-800">{{ slot.subject_name }}</td>
+                            <td class="px-4 py-3">
+                                {% if slot.room %}
+                                <span
+                                    class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
+                                    {{ slot.room }}
+                                </span>
+                                {% else %}
+                                <span class="text-slate-300 text-sm">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <form method="POST"
+                                    action="{{ url_for('admin.delete_timetable_slot', slot_id=slot.id) }}"
+                                    class="inline-block"
+                                    onsubmit="return confirm('Are you sure you want to delete this schedule slot?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit"
+                                        class="w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 shadow-sm flex items-center justify-center transition-colors ml-auto"
+                                        title="Delete Slot">
+                                        <span class="material-symbols-outlined text-[16px]">close</span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-8 text-center flex flex-col items-center justify-center h-full">
+                <span class="material-symbols-outlined text-4xl text-slate-200 mb-2">event_busy</span>
+                <p class="text-sm font-medium text-slate-400">No classes scheduled for {{ day }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

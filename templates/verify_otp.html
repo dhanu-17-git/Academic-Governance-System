@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify OTP - AcademicGov</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind_compiled.css') }}">
+
+</head>
+
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 relative overflow-hidden text-slate-800">
+
+    <!-- Animated Background Blobs -->
+    <div
+        class="absolute top-0 -right-4 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob">
+    </div>
+    <div
+        class="absolute top-40 -left-10 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-2000">
+    </div>
+    <div
+        class="absolute -bottom-8 right-20 w-72 h-72 bg-cyan-200 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-4000">
+    </div>
+
+    <div class="w-full max-w-md relative z-10 animate-slide-up">
+
+        <!-- Back Link -->
+        <a href="{{ url_for('auth.login') }}"
+            class="inline-flex items-center gap-2 text-slate-500 hover:text-primary font-semibold text-sm mb-6 transition-colors px-2 relative z-20 group">
+            <span
+                class="material-symbols-outlined text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+            Back to Login
+        </a>
+
+        <!-- Main Card -->
+        <div
+            class="bg-white/75 backdrop-blur-xl border border-white/60 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.05),inset_0_0_0_1px_rgba(255,255,255,0.9)] rounded-[2rem] p-8 sm:p-12 transform transition-all duration-500 hover:shadow-2xl">
+
+            <div class="text-center mb-8">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl mb-6 shadow-sm border border-emerald-200 transform hover:scale-105 transition-transform duration-300">
+                    <span class="material-symbols-outlined text-3xl font-bold">verified_user</span>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-3">Secure Login</h1>
+                <p class="text-sm text-slate-500 font-medium leading-relaxed">
+                    Verification code sent to<br>
+                    <strong class="text-slate-800">{{ email }}</strong>
+                </p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.verify_otp') }}" class="space-y-8">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div>
+                    <label for="otp"
+                        class="block text-center text-xs font-bold text-slate-700 uppercase tracking-widest mb-4">6-Digit
+                        Code</label>
+                    <input type="text" id="otp" name="otp" placeholder="000000" maxlength="6" inputmode="numeric"
+                        autocomplete="one-time-code"
+                        class="w-full bg-white/60 border border-slate-200/80 rounded-2xl py-4 text-center text-3xl font-black tracking-[0.5em] text-indigo-900 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/40 transition-all shadow-inner outline-none placeholder:text-slate-300 placeholder:font-normal placeholder:tracking-normal"
+                        required autofocus>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-indigo-600 text-white rounded-2xl py-4 font-bold text-sm shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:bg-indigo-500 transition-all hover:-translate-y-0.5 active:translate-y-0.5 flex items-center justify-center gap-2 group"
+                    id="verifyBtn">
+                    <span id="btnText">Verify & Access Dashboard</span>
+                    <span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform"
+                        id="btnIcon">check_circle</span>
+                    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white hidden" id="spinner"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center flex justify-between items-center text-xs font-semibold text-slate-400">
+                <p class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">schedule</span>
+                    Expires in 5m</p>
+                <a href="{{ url_for('auth.login') }}"
+                    class="text-primary hover:text-indigo-700 transition-colors bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg">Resend
+                    Code</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Only allow numeric input and auto-submit at 6 chars optionally (optional, but good UX)
+        const otpInput = document.getElementById('otp');
+        otpInput.addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // Loading animation on submit
+        document.querySelector('form').addEventListener('submit', function () {
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            const spinner = document.getElementById('spinner');
+            const btn = document.getElementById('verifyBtn');
+
+            btnText.textContent = 'Verifying...';
+            btnIcon.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            btn.classList.add('opacity-90', 'cursor-not-allowed', 'pointer-events-none');
+        });
+    </script>
+</body>
+
+</html>

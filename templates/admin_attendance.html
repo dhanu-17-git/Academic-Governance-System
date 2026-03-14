@@ -1,0 +1,122 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'attendance' %}
+
+{% block title %}Manage Attendance | AcademicGov{% endblock %}
+
+{% block main_content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-4xl">fact_check</span>
+            Manage Attendance
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">Update aggregate attendance records for all students.</p>
+    </div>
+</div>
+
+{% if students %}
+<form method="POST" class="space-y-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {% for email, records in students.items() %}
+    <div class="glass-panel overflow-hidden">
+        <div class="p-5 border-b border-slate-200/60 flex items-center justify-between bg-white/40">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined">person</span>
+                </div>
+                <div>
+                    <h3 class="font-display font-bold text-slate-800">{{ email }}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ records | length }}
+                        Subjects</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50">
+                        <th
+                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                            Subject</th>
+                        <th
+                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                            Total Classes</th>
+                        <th
+                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                            Attended</th>
+                        <th
+                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
+                            Progress</th>
+                        <th
+                            class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80 text-right">
+                            Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for r in records %}
+                    {% set pct = ((r.attended_classes / r.total_classes) * 100) | round(1) if r.total_classes > 0 else 0
+                    %}
+                    <tr class="hover:bg-white/60 transition-colors">
+                        <td class="px-6 py-4 text-sm font-bold text-slate-700">{{ r.subject_name }}</td>
+                        <td class="px-6 py-4">
+                            <input type="number" name="total_{{ r.student_email }}_{{ r.subject_id }}"
+                                value="{{ r.total_classes }}" min="0" max="200"
+                                class="w-24 bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary px-3 py-2 text-center shadow-sm">
+                        </td>
+                        <td class="px-6 py-4">
+                            <input type="number" name="attended_{{ r.student_email }}_{{ r.subject_id }}"
+                                value="{{ r.attended_classes }}" min="0" max="200"
+                                class="w-24 bg-white border border-slate-200 text-slate-800 text-sm font-bold rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary px-3 py-2 text-center shadow-sm">
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full {% if pct >= 75 %}bg-emerald-500{% elif pct >= 65 %}bg-amber-500{% else %}bg-rose-500{% endif %}"
+                                        style="width: {{ pct }}%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-slate-500">{{ pct }}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            {% if pct >= 75 %}
+                            <span
+                                class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 shadow-sm border border-emerald-200">Safe</span>
+                            {% elif pct >= 65 %}
+                            <span
+                                class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 shadow-sm border border-amber-200">At
+                                Risk</span>
+                            {% else %}
+                            <span
+                                class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-700 shadow-sm border border-rose-200">Critical</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="flex justify-end pt-4">
+        <button type="submit"
+            class="px-8 py-3.5 rounded-xl text-sm font-bold text-white bg-primary hover:bg-secondary shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all hover:-translate-y-0.5 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">save</span>
+            Save All Changes
+        </button>
+    </div>
+</form>
+{% else %}
+<div class="glass-panel p-8 text-center flex flex-col items-center justify-center">
+    <div class="w-14 h-14 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mb-4">
+        <span class="material-symbols-outlined text-3xl text-slate-300">person_off</span>
+    </div>
+    <h3 class="text-xl font-display font-bold text-slate-800 mb-2">No Student Records Found</h3>
+    <p class="text-slate-500 max-w-sm">Students need to log in to the system at least once for their academic records to
+        be seeded into the database.</p>
+</div>
+{% endif %}
+{% endblock %}

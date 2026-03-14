@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Enterprise Student Dashboard - AcademicGov</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind_compiled.css') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="flex bg-white text-[#0f172a] antialiased min-h-screen">
+    {% if not session.user_email %}
+    <script>window.location.href = "{{ url_for('auth.login') }}";</script>
+    {% endif %}
+
+    <aside class="w-64 flex-shrink-0 border-r border-slate-200 bg-white sticky top-0 h-screen hidden lg:flex flex-col">
+        <div class="px-6 py-6 flex flex-col h-full overflow-y-auto">
+            <div class="flex items-center gap-3 px-4 mb-8">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined text-lg font-bold">school</span>
+                </div>
+                <span class="text-lg font-bold tracking-tight text-slate-900">Academic<span
+                        class="text-indigo-600">Gov</span></span>
+            </div>
+            <div class="mb-4">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Main Menu</p>
+                <nav class="space-y-1">
+                    <a class="sidebar-item sidebar-item-active" href="{{ url_for('student.dashboard') }}">
+                        <span class="material-symbols-outlined text-[20px]">dashboard</span> Dashboard
+                    </a>
+                    <a class="sidebar-item" href="{{ url_for('student.raise_complaint') }}">
+                        <span class="material-symbols-outlined text-[20px]">report_problem</span> Raise
+                        Complaint
+                    </a>
+                    <a class="sidebar-item" href="{{ url_for('student.track_complaint') }}">
+                        <span class="material-symbols-outlined text-[20px]">my_location</span> Track Complaint
+                    </a>
+                    <a class="sidebar-item" href="{{ url_for('student.academic_feedback') }}">
+                        <span class="material-symbols-outlined text-[20px]">rate_review</span> Feedback
+                    </a>
+                    <a class="sidebar-item" href="{{ url_for('student.placement_index') }}">
+                        <span class="material-symbols-outlined text-[20px]">rocket</span> Placement
+                    </a>
+                    {% if session.get('role') == 'student' %}
+                    <a class="sidebar-item" href="{{ url_for('student.lab_index') }}">
+                        <span class="material-symbols-outlined text-[20px]">science</span> Lab Status
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+
+        </div>
+        <div class="p-4 border-t border-slate-100">
+            <div
+                class="bg-slate-50 hover:bg-indigo-50 rounded-lg p-3 flex items-center gap-3 cursor-pointer transition-colors duration-200">
+                <div class="h-8 w-8 rounded-full bg-slate-200 border border-slate-300"
+                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBD7CamJ5CAxTktdCEGqWb8OAWsbpyprZBaGjNopT7sLOpCJx4WjgbFCC3Xy8xOhkMH_zsNU3CS_h-97WopeBhSJPSrppbn58dml21xvOpp2j1cPWVmKrjwhFWV83ATXtH4XI2KWFpe6jycPMTnaUhK5EB_z5LgAgpElFn3ORPcteR288fYNc4S3PhZq9XNgLKg9NzKIaLd56B3rOiEb8X-kRId3HKv5XgXRzblQy_uTuh5-ILo8l0CLUKONOLrJOueGR6NkS1LBxjg'); background-size: cover;">
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <p class="text-xs font-bold text-slate-900 truncate">{{ session.user_email.split('@')[0] }}
+                    </p>
+                    <p class="text-[10px] text-slate-500 truncate">Student ID Hidden</p>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="text-rose-400 hover:text-rose-600 ml-auto"><span
+                        class="material-symbols-outlined text-sm">logout</span></a>
+            </div>
+        </div>
+    </aside>
+    <div class="flex-1 flex flex-col min-w-0">
+        <header
+            class="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0">
+            <!-- Left: Spacer (since branding is in sidebar) -->
+            <div class="flex-1 hidden lg:block"></div>
+            <div id="mobileMenuToggle" class="lg:hidden flex items-center p-2 -ml-2 text-slate-600">
+                <span class="material-symbols-outlined">menu</span>
+            </div>
+
+            <!-- Center: Search Bar -->
+            <div class="flex-1 flex justify-center px-4">
+                <div class="search-container-main relative w-full max-w-md">
+                    <span
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl font-light">search</span>
+                    <input
+                        class="search-input-main w-full bg-slate-50 border border-slate-200 rounded-full py-2 pl-12 pr-4 text-sm focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/30 transition-all placeholder:text-slate-400 font-medium"
+                        placeholder="Search data..." type="text" />
+                </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="flex-1 flex items-center justify-end gap-3 lg:gap-4">
+                <button class="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-bold leading-none">{{ session.get('student_id', 'Student') }}</p>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Student</p>
+                    </div>
+                    <div
+                        class="w-9 h-9 bg-indigo-600/10 text-indigo-600 rounded-full flex items-center justify-center font-bold">
+                        {{ session.get('student_id', 'S')[0] }}</div>
+                </div>
+            </div>
+        </header>
+        <main class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+            <div class="pt-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="p-4 mb-4 text-sm rounded-lg {% if category == 'error' %}bg-rose-50 text-rose-800{% else %}bg-emerald-50 text-emerald-800{% endif %}"
+                    role="alert">
+                    <span class="font-medium">{{ message }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span
+                            class="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded uppercase tracking-wide border border-indigo-100">Student
+                            Portal</span>
+                        <span class="text-slate-300">•</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Spring Semester
+                            2024</span>
+                    </div>
+                    <h1 class="text-2xl font-extrabold text-slate-900">Welcome back, {{ session.user_email.split('@')[0]
+                        }}! 👋</h1>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+                <div class="info-card" onclick="window.location.href='{{ url_for('student.attendance_overview') }}';">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attendance</p>
+                        <span class="material-symbols-outlined text-indigo-500 text-sm">check_circle</span>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <h3 class="text-xl font-bold">{{ overall_attendance_pct|default("0") }}%</h3>
+                        <div class="sparkline">
+                            <div class="w-1 bg-indigo-100 h-2 rounded-t-sm"></div>
+                            <div class="w-1 bg-indigo-200 h-4 rounded-t-sm"></div>
+                            <div class="w-1 bg-indigo-400 h-3 rounded-t-sm"></div>
+                            <div class="w-1 bg-indigo-600 h-5 rounded-t-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-card" onclick="window.location.href='{{ url_for('student.marks_overview') }}';">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Avg Marks</p>
+                        <span class="material-symbols-outlined text-emerald-500 text-sm">stars</span>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <h3 class="text-xl font-bold">{{ avg_marks_pct|default("0") }}%</h3>
+                        <div class="sparkline">
+                            <div class="w-1 bg-emerald-100 h-3 rounded-t-sm"></div>
+                            <div class="w-1 bg-emerald-200 h-5 rounded-t-sm"></div>
+                            <div class="w-1 bg-emerald-400 h-2 rounded-t-sm"></div>
+                            <div class="w-1 bg-emerald-600 h-4 rounded-t-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-card" onclick="window.location.href='{{ url_for('student.course_plan_overview') }}';">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Course Plan</p>
+                        <span class="material-symbols-outlined text-amber-500 text-sm">book</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <h3 class="text-xl font-bold">{{ attendance_records|length|default("0") }}</h3>
+                        <span class="text-[10px] text-slate-400 font-medium">Active</span>
+                    </div>
+                </div>
+                <div class="info-card" onclick="window.location.href='{{ url_for('student.placement_index') }}';">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Placement</p>
+                        <span class="material-symbols-outlined text-purple-500 text-sm">rocket</span>
+                    </div>
+                    <p class="text-xs font-bold text-slate-700">Shortlisted</p>
+                    <div class="mt-1 h-1 bg-purple-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-purple-600 w-2/3"></div>
+                    </div>
+                </div>
+                <div class="info-card border-indigo-200 bg-indigo-50/30"
+                    onclick="window.location.href='{{ url_for('student.student_progress') }}';">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">My Progress</p>
+                        <span class="material-symbols-outlined text-indigo-500 text-sm">trending_up</span>
+                    </div>
+                    <div class="flex items-end gap-1 h-6">
+                        <div class="flex-1 bg-indigo-200 h-2"></div>
+                        <div class="flex-1 bg-indigo-300 h-4"></div>
+                        <div class="flex-1 bg-indigo-400 h-6"></div>
+                        <div class="flex-1 bg-indigo-500 h-5"></div>
+                        <div class="flex-1 bg-indigo-600 h-4"></div>
+                    </div>
+                </div>
+                <div class="info-card" onclick="window.location.href='{{ url_for('student.lab_index') }}';">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lab Status</p>
+                        <span class="material-symbols-outlined text-rose-500 text-sm">science</span>
+                    </div>
+                    <p class="text-xs font-bold text-rose-600">Pending (2)</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+                <div class="lg:col-span-8">
+                    <div
+                        class="bg-white border border-slate-200 rounded-lg overflow-hidden flex flex-col h-full shadow-sm">
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                            <div class="flex items-center gap-3">
+                                <h2 class="text-sm font-bold text-slate-900">Weekly Schedule</h2>
+                                <span class="px-2 py-0.5 bg-slate-200 text-slate-600 text-[10px] font-bold rounded">Week
+                                    36</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button class="p-1 hover:bg-slate-200 rounded text-slate-500"><span
+                                        class="material-symbols-outlined text-lg">chevron_left</span></button>
+                                    <span class="text-[10px] font-bold text-slate-500 px-2">SEP 11 - 15</span>
+                                    <button class="p-1 hover:bg-slate-200 rounded text-slate-500"><span
+                                            class="material-symbols-outlined text-lg">chevron_right</span></button>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="table-responsive bg-light bg-opacity-50 rounded-4 p-4 border-0 shadow-sm"
+                                style="overflow-x: auto;">
+                                <style>
+                                    .modern-timetable-grid {
+                                        border-collapse: separate;
+                                        border-spacing: 6px;
+                                        min-width: 700px;
+                                        margin-bottom: 0;
+                                    }
+
+                                    .modern-timetable-grid th {
+                                        text-align: center;
+                                        color: #6c757d;
+                                        font-weight: 600;
+                                        font-size: 0.65rem;
+                                        text-transform: uppercase;
+                                        letter-spacing: 0.5px;
+                                        border: none;
+                                        padding-bottom: 0.5rem;
+                                        white-space: nowrap;
+                                    }
+
+                                    .modern-timetable-grid .day-col {
+                                        width: 40px;
+                                        text-align: right;
+                                        padding-right: 0.5rem;
+                                        color: #495057;
+                                        font-weight: 700;
+                                        font-size: 0.9rem;
+                                        text-transform: uppercase;
+                                        vertical-align: middle;
+                                        border: none;
+                                    }
+
+                                    .modern-timetable-grid td {
+                                        padding: 0;
+                                        border: none;
+                                        vertical-align: stretch;
+                                    }
+
+                                    .event-card {
+                                        border-radius: 12px;
+                                        padding: 8px;
+                                        height: 100%;
+                                        min-height: 60px;
+                                        display: flex;
+                                        flex-direction: column;
+                                        justify-content: center;
+                                        transition: all 0.2s ease;
+                                        border-left: 4px solid transparent;
+                                        background: #fff;
+                                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                                    }
+
+                                    .event-card:hover {
+                                        transform: scale(1.02);
+                                        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                                        z-index: 10;
+                                        position: relative;
+                                    }
+
+                                    .event-card h6 {
+                                        margin: 0 0 6px 0;
+                                        font-weight: 700;
+                                        font-size: 0.65rem;
+                                        color: #212529;
+                                    }
+
+                                    .event-card small {
+                                        font-size: 0.65rem;
+                                        color: #6c757d;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 4px;
+                                    }
+
+                                    .e-primary {
+                                        border-left-color: #0d6efd;
+                                    }
+
+                                    .e-primary h6 {
+                                        color: #0d6efd;
+                                    }
+
+                                    .e-info {
+                                        border-left-color: #0dcaf0;
+                                    }
+
+                                    .e-info h6 {
+                                        color: #087990;
+                                    }
+
+                                    .e-success {
+                                        border-left-color: #198754;
+                                    }
+
+                                    .e-success h6 {
+                                        color: #0f5132;
+                                    }
+
+                                    .e-warning {
+                                        border-left-color: #ffc107;
+                                    }
+
+                                    .e-warning h6 {
+                                        color: #997404;
+                                    }
+
+                                    .e-danger {
+                                        border-left-color: #dc3545;
+                                    }
+
+                                    .e-danger h6 {
+                                        color: #842029;
+                                    }
+
+                                    .e-dark {
+                                        border-left-color: #212529;
+                                    }
+
+                                    .e-break {
+                                        border-left-color: #adb5bd;
+                                        background: transparent;
+                                        border: 2px dashed #dee2e6;
+                                        box-shadow: none;
+                                        justify-content: center;
+                                        align-items: center;
+                                        min-width: 45px;
+                                    }
+
+                                    .e-break .time-text {
+                                        color: #adb5bd;
+                                        font-weight: 700;
+                                        font-size: 0.65rem;
+                                        letter-spacing: 5px;
+                                        text-transform: uppercase;
+                                        writing-mode: vertical-rl;
+                                        text-orientation: upright;
+                                    }
+
+                                    .e-break:hover {
+                                        transform: none;
+                                        box-shadow: none;
+                                        border-color: #adb5bd;
+                                        background: #f8f9fa;
+                                    }
+                                </style>
+
+                                <table class="table modern-timetable-grid w-100">
+                                    <thead>
+                                        <tr>
+                                            <th class="day-col"></th>
+                                            <th style="width: 11%;">09:00 - 10:00</th>
+                                            <th style="width: 11%;">10:00 - 11:00</th>
+                                            <th style="width: 4%;">11:00 - 11:30</th>
+                                            <th style="width: 11%;">11:30 - 12:30</th>
+                                            <th style="width: 11%;">12:30 - 01:30</th>
+                                            <th style="width: 4%;">01:30 - 02:30</th>
+                                            <th style="width: 11%;">02:30 - 03:30</th>
+                                            <th style="width: 11%;">03:30 - 04:30</th>
+                                            <th style="width: 11%;">04:30 - 05:30</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Monday -->
+                                        <tr>
+                                            <td class="day-col">Mon</td>
+                                            <td>
+                                                <div class="event-card e-primary">
+                                                    <h6>ADA</h6><small><i class="fas fa-user-tie"></i> Dr. Shabana
+                                                        S.</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-info">
+                                                    <h6>AI</h6><small><i class="fas fa-user-tie"></i> Balaji V</small>
+                                                </div>
+                                            </td>
+                                            <td rowspan="5">
+                                                <div class="event-card e-break">
+                                                    <div class="time-text">BREAK</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-success">
+                                                    <h6>DBMS</h6><small><i class="fas fa-user-tie"></i> Usha K
+                                                        P.</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-warning">
+                                                    <h6>DMS / Algebra</h6><small><i class="fas fa-user-tie"></i> Dr. MRR
+                                                        / SK</small>
+                                                </div>
+                                            </td>
+                                            <td rowspan="5">
+                                                <div class="event-card e-break">
+                                                    <div class="time-text">LUNCH</div>
+                                                </div>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="event-card e-danger">
+                                                    <h6>LAB (ADA / DBMS / AI)</h6><small><i class="fas fa-flask"></i> E1
+                                                        / E2 / E3</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-dark">
+                                                    <h6>NSS / PE / YOGA</h6><small><i class="fas fa-walking"></i> PMS /
+                                                        NV</small>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <!-- Tuesday -->
+                                        <tr>
+                                            <td class="day-col">Tue</td>
+                                            <td>
+                                                <div class="event-card e-info">
+                                                    <h6>AI</h6><small><i class="fas fa-user-tie"></i> Balaji V</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-primary">
+                                                    <h6>ADA</h6><small><i class="fas fa-user-tie"></i> Dr. Shabana
+                                                        S.</small>
+                                                </div>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="event-card e-danger">
+                                                    <h6>LAB (ADA / DBMS)</h6><small><i class="fas fa-flask"></i> E2 /
+                                                        E3</small>
+                                                </div>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="event-card e-danger">
+                                                    <h6>LAB (AI)</h6><small><i class="fas fa-flask"></i> E1</small>
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                        <!-- Wednesday -->
+                                        <tr>
+                                            <td class="day-col">Wed</td>
+                                            <td>
+                                                <div class="event-card e-primary">
+                                                    <h6>UHV</h6><small><i class="fas fa-user-tie"></i> Sneha S</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-success">
+                                                    <h6>DBMS</h6><small><i class="fas fa-user-tie"></i> Usha K
+                                                        P.</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-warning">
+                                                    <h6>DMS / Algebra</h6><small><i class="fas fa-user-tie"></i> Dr. MRR
+                                                        / SK</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-primary">
+                                                    <h6>ADA</h6><small><i class="fas fa-user-tie"></i> Dr. Shabana
+                                                        S.</small>
+                                                </div>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="event-card e-danger">
+                                                    <h6>LAB (MERN)</h6><small><i class="fas fa-flask"></i> E2</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-dark">
+                                                    <h6>NSS / PE / YOGA</h6><small><i class="fas fa-walking"></i> PMS /
+                                                        NV</small>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <!-- Thursday -->
+                                        <tr>
+                                            <td class="day-col">Thu</td>
+                                            <td colspan="2">
+                                                <div class="event-card e-danger">
+                                                    <h6>LAB (DBMS / AI / ADA)</h6><small><i class="fas fa-flask"></i> E1
+                                                        / E2 / E3</small>
+                                                </div>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="event-card e-primary">
+                                                    <h6>Biology</h6><small><i class="fas fa-book"></i> Dept
+                                                        Faculty</small>
+                                                </div>
+                                            </td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                        <!-- Friday -->
+                                        <tr>
+                                            <td class="day-col">Fri</td>
+                                            <td>
+                                                <div class="event-card e-success">
+                                                    <h6>DBMS</h6><small><i class="fas fa-user-tie"></i> Usha K
+                                                        P.</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="event-card e-info">
+                                                    <h6>AI</h6><small><i class="fas fa-user-tie"></i> Balaji V</small>
+                                                </div>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="event-card e-warning">
+                                                    <h6>DMS / Algebra</h6><small><i class="fas fa-user-tie"></i> Dr.
+                                                        MRR</small>
+                                                </div>
+                                            </td>
+                                            <td colspan="2">
+                                                <div class="event-card e-danger">
+                                                    <h6>LAB (MERN)</h6><small><i class="fas fa-flask"></i> E1</small>
+                                                </div>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-4">
+                    <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm h-full">
+                        <div class="flex items-center justify-between mb-5">
+                            <h2 class="text-sm font-bold text-slate-900">Today's Classes</h2>
+                            <span class="material-symbols-outlined text-slate-400 text-lg">event_note</span>
+                        </div>
+                        <div class="space-y-4">
+
+                            <div id="ongoing-class-content" class="relative group cursor-pointer" style="display:none;">
+                                <div class="absolute -left-1 top-4 bottom-4 w-1 bg-indigo-600 rounded-full"></div>
+                                <div
+                                    class="p-4 rounded-md border border-slate-100 hover:border-indigo-100 bg-indigo-50/10 hover:bg-indigo-50/30 transition-all">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span
+                                            class="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Ongoing</span>
+                                        <span id="ongoing-time" class="text-[10px] font-bold text-slate-400">Time</span>
+                                    </div>
+                                    <h4 id="ongoing-subject" class="text-sm font-bold text-slate-900 mb-1">Subject</h4>
+                                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                                        <span class="material-symbols-outlined text-xs">person</span>
+                                        <span id="ongoing-instructor">Instructor</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="no-ongoing-class">
+                                <div class="p-4 text-center rounded-md border border-slate-100 bg-slate-50/50">
+                                    <span class="text-xs text-slate-500 font-medium">No active class right now.</span>
+                                </div>
+                            </div>
+
+
+                            <div id="next-class-content" class="relative group cursor-pointer" style="display:none;">
+                                <div class="absolute -left-1 top-4 bottom-4 w-1 bg-emerald-500 rounded-full"></div>
+                                <div
+                                    class="p-4 rounded-md border border-slate-100 hover:border-slate-200 transition-all">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span
+                                            class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Next
+                                            Up</span>
+                                        <span id="next-time" class="text-[10px] font-bold text-slate-400">Time</span>
+                                    </div>
+                                    <h4 id="next-subject" class="text-sm font-bold text-slate-900 mb-1">Subject</h4>
+                                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                                        <span class="material-symbols-outlined text-xs">person</span>
+                                        <span id="next-instructor">Instructor</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="no-next-class">
+                                <div class="p-4 text-center rounded-md border border-slate-100 bg-slate-50/50">
+                                    <span class="text-xs text-slate-500 font-medium">Done for the day!</span>
+                                </div>
+                            </div>
+
+                            <button
+                                class="w-full py-2.5 border border-slate-200 text-slate-500 text-[11px] font-bold rounded hover:bg-slate-50 transition-colors uppercase tracking-wider">
+                                See All Classes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8">
+                    <h2 class="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Latest Updates</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="updates-section">
+                        {% for update in updates %}
+                        <div
+                            class="bg-white p-3 border border-slate-200 rounded-lg shadow-sm flex gap-4 items-center hover:bg-slate-50 hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                            <div
+                                class="h-10 w-10 rounded {% if loop.index0 % 2 == 0 %}bg-indigo-100 text-indigo-600{% else %}bg-amber-100 text-amber-600{% endif %} flex-shrink-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined">notifications</span>
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-xs text-slate-900 truncate">{{ update.title }}</h4>
+                                <p class="text-[10px] text-slate-500 truncate mt-0.5">{{ update.content }}</p>
+                                <span class="text-[9px] font-bold text-slate-400 mt-1 block">{{
+                                    update.created_at.split(' ')[0] if ' ' in update.created_at else update.created_at
+                                    }} | {{ update.category }}</span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-[11px] text-slate-500 p-4">No campus updates available at the moment.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="lg:col-span-4">
+                    <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm h-full">
+                        <h2 class="text-sm font-bold text-slate-900 mb-6 uppercase tracking-wider">Tickets Summary</h2>
+                        <div class="flex items-center justify-center mb-8">
+                            <div class="relative flex items-center justify-center">
+                                <svg class="w-28 h-28 transform -rotate-90">
+                                    <circle class="text-slate-100" cx="56" cy="56" fill="transparent" r="48"
+                                        stroke="currentColor" stroke-width="6"></circle>
+                                    <circle class="text-indigo-600" cx="56" cy="56" fill="transparent" r="48"
+                                        stroke="currentColor" stroke-dasharray="301.6" stroke-dashoffset="75.4"
+                                        stroke-linecap="round" stroke-width="8"></circle>
+                                </svg>
+                                <div class="absolute text-center">
+                                    <span class="block text-xl font-extrabold text-slate-900">{{ total_complaints
+                                        }}</span>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase">Tickets</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-2 rounded bg-slate-50">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Resolved</span>
+                                </div>
+                                <span class="text-xs font-bold text-slate-900">{{ resolved_complaints }}</span>
+                            </div>
+                            <div class="flex items-center justify-between p-2 rounded bg-slate-50">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Pending</span>
+                                </div>
+                                <span class="text-xs font-bold text-slate-900">{{ pending_complaints }}</span>
+                            </div>
+                        </div>
+                        <button class="w-full mt-6 compact-button justify-center py-2.5 shadow-sm">
+                            View All Tickets
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="mt-auto px-8 py-6 border-t border-slate-200 bg-white">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-[11px] font-medium text-slate-400">© 2024 Academic Governance System. Enterprise v4.2.0
+                </p>
+                <div class="flex gap-6">
+                    <a class="text-[11px] font-bold text-slate-500 hover:text-indigo-600" href="#">Documentation</a>
+                    <a class="text-[11px] font-bold text-slate-500 hover:text-indigo-600" href="#">Support</a>
+                    <a class="text-[11px] font-bold text-slate-500 hover:text-indigo-600" href="#">System Status</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+
+    <!-- Original Timetable Logic Port -->
+    <script>
+        const scheduleData = {
+            1: [ // Monday
+                { start: "09:00", end: "10:00", subject: "ADA", instructor: "Dr. Shabana Sultana" },
+                { start: "10:00", end: "11:00", subject: "AI", instructor: "Balaji V" },
+                { start: "11:00", end: "11:30", subject: "Short Break", instructor: "-" },
+                { start: "11:30", end: "12:30", subject: "DBMS", instructor: "Usha K Patil" },
+                { start: "12:30", end: "13:30", subject: "DMS/Algebra", instructor: "Dr. M R Rashmi / Dr. Shivaraj Kumar" },
+                { start: "13:30", end: "14:30", subject: "Lunch Break", instructor: "-" },
+                { start: "14:30", end: "16:30", subject: "Lab (E1: ADA, E2: DBMS, E3: AI)", instructor: "Respective Lab Faculty" },
+                { start: "16:30", end: "17:30", subject: "NSS / PE / YOGA", instructor: "Padmini M S / Nanditha V" }
+            ],
+            2: [ // Tuesday
+                { start: "09:00", end: "10:00", subject: "AI", instructor: "Balaji V" },
+                { start: "10:00", end: "11:00", subject: "ADA", instructor: "Dr. Shabana Sultana" },
+                { start: "11:00", end: "11:30", subject: "Short Break", instructor: "-" },
+                { start: "11:30", end: "13:30", subject: "Lab (E2: ADA, E3: DBMS)", instructor: "Respective Lab Faculty" },
+                { start: "13:30", end: "14:30", subject: "Lunch Break", instructor: "-" },
+                { start: "14:30", end: "16:30", subject: "Lab (E1: AI)", instructor: "Balaji V + MA" }
+            ],
+            3: [ // Wednesday
+                { start: "09:00", end: "10:00", subject: "UHV", instructor: "Sneha S" },
+                { start: "10:00", end: "11:00", subject: "DBMS", instructor: "Usha K Patil" },
+                { start: "11:00", end: "11:30", subject: "Short Break", instructor: "-" },
+                { start: "11:30", end: "12:30", subject: "DMS/Algebra", instructor: "Dr. M R Rashmi / Dr. Shivaraj Kumar" },
+                { start: "12:30", end: "13:30", subject: "ADA", instructor: "Dr. Shabana Sultana" },
+                { start: "13:30", end: "14:30", subject: "Lunch Break", instructor: "-" },
+                { start: "14:30", end: "16:30", subject: "Lab (E2: MERN)", instructor: "Divyashree R + ZF" },
+                { start: "16:30", end: "17:30", subject: "NSS / PE / YOGA", instructor: "Padmini M S / Nanditha V" }
+            ],
+            4: [ // Thursday
+                { start: "09:00", end: "11:00", subject: "Lab (E1: DBMS, E2: AI, E3: ADA)", instructor: "Respective Lab Faculty" },
+                { start: "11:00", end: "11:30", subject: "Short Break", instructor: "-" },
+                { start: "11:30", end: "13:30", subject: "Biology for Engineering", instructor: "-" },
+                { start: "13:30", end: "14:30", subject: "Lunch Break", instructor: "-" }
+            ],
+            5: [ // Friday
+                { start: "09:00", end: "10:00", subject: "DBMS", instructor: "Usha K Patil" },
+                { start: "10:00", end: "11:00", subject: "AI", instructor: "Balaji V" },
+                { start: "11:00", end: "11:30", subject: "Short Break", instructor: "-" },
+                { start: "11:30", end: "13:30", subject: "DMS/Algebra", instructor: "Dr. M R Rashmi" },
+                { start: "13:30", end: "14:30", subject: "Lunch Break", instructor: "-" },
+                { start: "14:30", end: "16:30", subject: "Lab (E1: MERN)", instructor: "Divyashree R + ZF" }
+            ]
+        };
+
+        function updateClasses() {
+            const now = new Date();
+            const day = now.getDay();
+            const currentMins = now.getHours() * 60 + now.getMinutes();
+
+            const todaysClasses = scheduleData[day] || [];
+            let ongoingClass = null;
+            let nextClass = null;
+
+            for (let i = 0; i < todaysClasses.length; i++) {
+                let c = todaysClasses[i]; let [startH,
+                    startM] = c.start.split(":").map(Number); let [endH, endM] = c.end.split(":").map(Number); let startTotal = startH * 60 +
+                        startM; let endTotal = endH * 60 + endM; if (currentMins >= startTotal && currentMins < endTotal) {
+                            ongoingClass = c; if
+                                (i + 1 < todaysClasses.length) { nextClass = todaysClasses[i + 1]; } break;
+                        } else if (currentMins < startTotal) {
+                            if (!nextClass) { nextClass = c; }
+                        }
+            } function formatTime(timeStr) {
+                let [h, m] = timeStr.split(':'); let
+                    hour = parseInt(h); let ampm = hour >= 12 ? 'PM' : 'AM';
+                hour = hour % 12;
+                hour = hour ? hour : 12;
+                return `${hour}:${m} ${ampm}`;
+            }
+
+            if (ongoingClass && ongoingClass.instructor !== "-") {
+                document.getElementById("ongoing-class-content").style.display = "block";
+                document.getElementById("no-ongoing-class").style.display = "none";
+                document.getElementById("ongoing-subject").textContent = ongoingClass.subject;
+                document.getElementById("ongoing-instructor").textContent = ongoingClass.instructor;
+                document.getElementById("ongoing-time").textContent = `${formatTime(ongoingClass.start)} -
+        ${formatTime(ongoingClass.end)}`;
+            } else {
+                document.getElementById("ongoing-class-content").style.display = "none";
+                document.getElementById("no-ongoing-class").style.display = "block";
+            }
+
+            if (nextClass && nextClass.instructor !== "-") {
+                document.getElementById("next-class-content").style.display = "block";
+                document.getElementById("no-next-class").style.display = "none";
+                document.getElementById("next-subject").textContent = nextClass.subject;
+                document.getElementById("next-instructor").textContent = nextClass.instructor;
+                document.getElementById("next-time").textContent = `${formatTime(nextClass.start)} -
+        ${formatTime(nextClass.end)}`;
+            } else {
+                document.getElementById("next-class-content").style.display = "none";
+                document.getElementById("no-next-class").style.display = "block";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            updateClasses();
+            // Update every minute to keep it live
+            setInterval(updateClasses, 60000);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+
+    <!-- ARIA Chatbot Widget -->
+    {% include 'chatbot_widget.html' %}
+</body>
+
+</html>

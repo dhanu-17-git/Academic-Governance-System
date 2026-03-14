@@ -1,0 +1,303 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'complaints' %}
+
+{% block title %}Raise Complaint | AcademicGov{% endblock %}
+
+{% block main_content %}
+<style>
+    .info-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .dark .info-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-card:hover {
+        border-color: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1);
+    }
+
+    .compact-button-large {
+        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 16px;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .compact-button-large:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .form-input {
+        display: block;
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 0.75rem 1rem;
+        transition: all 0.2s;
+    }
+
+    .dark .form-input {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: #334155;
+        color: white;
+    }
+
+    .form-input:focus {
+        border-color: #6366f1;
+        background: rgba(255, 255, 255, 0.8);
+        ring: 4px;
+        ring-color: rgba(99, 102, 241, 0.1);
+    }
+</style>
+
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="mb-10 text-center">
+        <div class="flex justify-center mb-4">
+            <span
+                class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border border-indigo-100 dark:border-indigo-800/50">
+                <span class="material-symbols-outlined text-sm">verified_user</span>
+                Anonymous Submission
+            </span>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white leading-tight">Submit Your Issue</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-3 text-sm leading-relaxed max-w-2xl mx-auto">
+            Your identity remains protected under student governance protocols. We ensure a safe and confidential
+            reporting environment.
+        </p>
+    </div>
+
+    <div class="info-card p-8 lg:p-12">
+        <form action="{{ url_for('student.raise_complaint') }}" class="space-y-8" enctype="multipart/form-data"
+            id="complaintForm" method="POST">
+            <input name="csrf_token" type="hidden" value="{{ csrf_token() if csrf_token else '' }}" />
+
+            <div class="space-y-3">
+                <label class="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                    for="category">
+                    Complaint Category <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <select class="form-input appearance-none pr-10" id="category" name="category" required="">
+                        <option disabled="" selected="" value="">Select a category</option>
+                        <option value="Academic">Academic Affairs</option>
+                        <option value="Cleaning">Cleaning &amp; Maintenance</option>
+                        <option value="Parking">Campus Parking</option>
+                        <option value="Placement">Placements &amp; Training</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option class="text-rose-600 font-bold" value="Ragging">Ragging (High Priority)</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <span class="material-symbols-outlined">expand_more</span>
+                    </div>
+                </div>
+                <div class="hidden mt-4 p-5 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800/30 rounded-2xl flex items-start gap-4 transition-all"
+                    id="raggingWarning">
+                    <div
+                        class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-800/50 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-rose-600 text-xl font-bold">priority_high</span>
+                    </div>
+                    <p class="text-[11px] text-rose-700 dark:text-rose-400 leading-normal font-medium">
+                        <strong class="block text-sm font-black mb-1">High Priority Incident</strong>
+                        Ragging complaints are escalated immediately to the University Anti-Ragging Committee.
+                        Strict actions will be taken within 24 hours.
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex justify-between items-end">
+                    <label class="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                        for="description">
+                        Detailed Description <span class="text-rose-500">*</span>
+                    </label>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" id="charCounter">
+                        <span id="charCount">0</span> / 1000
+                    </span>
+                </div>
+                <textarea class="form-input min-h-[200px] resize-none" id="description" name="description"
+                    placeholder="Provide a detailed account of the incident, including time, location, and context..."
+                    required=""></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-3">
+                    <label class="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                        for="file">
+                        Supporting Evidence
+                    </label>
+                    <div class="relative group">
+                        <div class="flex items-center justify-center w-full">
+                            <label
+                                class="flex flex-col items-center justify-center w-full h-40 border-2 border-slate-200 dark:border-slate-800 border-dashed rounded-2xl cursor-pointer bg-slate-50/50 dark:bg-slate-900/50 group-hover:bg-indigo-50/40 dark:group-hover:bg-indigo-900/10 group-hover:border-indigo-300 transition-all"
+                                for="file">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <div
+                                        class="w-12 h-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <span
+                                            class="material-symbols-outlined text-slate-400 group-hover:text-indigo-500 text-2xl">cloud_upload</span>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-500 group-hover:text-indigo-600">Drag files
+                                        or click</p>
+                                    <p class="text-[9px] text-slate-400 mt-1 font-black uppercase tracking-wider">PDF,
+                                        JPG, PNG (Max 16MB)</p>
+                                </div>
+                                <input accept=".png,.jpg,.jpeg,.gif,.pdf" class="hidden" id="file" name="file"
+                                    type="file" />
+                            </label>
+                        </div>
+                        <div class="hidden absolute inset-0 bg-white dark:bg-slate-800 rounded-2xl border border-indigo-200 dark:border-indigo-800/50 p-6 flex items-center gap-4 shadow-xl"
+                            id="filePreview">
+                            <div
+                                class="w-14 h-14 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-indigo-600 text-2xl">description</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate" id="fileName">
+                                </p>
+                                <p class="text-[10px] text-indigo-500 font-black uppercase tracking-widest mt-0.5">Ready
+                                    to upload</p>
+                            </div>
+                            <button
+                                class="w-10 h-10 flex items-center justify-center hover:bg-rose-50 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 rounded-full transition-colors"
+                                onclick="removeFile()" type="button">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <label class="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                        for="url">
+                        Relevant Reference Link
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="material-symbols-outlined text-slate-400 text-xl">link</span>
+                        </div>
+                        <input class="form-input pl-12" id="url" name="url" placeholder="Paste supporting link..."
+                            type="url" />
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-bold leading-relaxed mt-2 uppercase tracking-tighter">
+                        External evidence (Shared Drives, Recordings, etc.)</p>
+                </div>
+            </div>
+
+            <div
+                class="bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100/50 dark:border-indigo-800/20 rounded-2xl p-6 flex gap-5">
+                <div
+                    class="flex-shrink-0 w-12 h-12 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center">
+                    <span
+                        class="material-symbols-outlined text-indigo-600 dark:text-indigo-400 text-2xl font-bold">lock</span>
+                </div>
+                <div class="space-y-1">
+                    <h4 class="text-sm font-black text-slate-800 dark:text-slate-200">Zero-Leak Privacy Protocol</h4>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                        Your metadata is automatically stripped. Only the core issue is transmitted to the governance
+                        committee. You will receive an encrypted tracking ID.
+                    </p>
+                </div>
+            </div>
+
+            <button class="compact-button-large w-full mt-2" id="submitBtn" type="submit">
+                <span class="flex items-center gap-2" id="btnLabel">
+                    <span class="material-symbols-outlined text-xl">verified</span>
+                    Secure Submit
+                </span>
+                <span class="hidden flex items-center gap-2" id="btnLoading">
+                    <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            fill="currentColor"></path>
+                    </svg>
+                    Processing Encryption...
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Character counter
+        const description = document.getElementById('description');
+        const charCount = document.getElementById('charCount');
+        description.addEventListener('input', function () {
+            charCount.textContent = this.value.length;
+            if (this.value.length > 1000) {
+                this.value = this.value.substring(0, 1000);
+                charCount.textContent = 1000;
+            }
+            if (this.value.length > 900) {
+                charCount.classList.add('text-rose-500', 'font-bold');
+            } else {
+                charCount.classList.remove('text-rose-500', 'font-bold');
+            }
+        });
+
+        // File upload preview
+        const fileInput = document.getElementById('file');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                fileName.textContent = this.files[0].name;
+                filePreview.classList.remove('hidden');
+                filePreview.classList.add('flex');
+            }
+        });
+
+        window.removeFile = function () {
+            fileInput.value = '';
+            filePreview.classList.add('hidden');
+            filePreview.classList.remove('flex');
+        };
+
+        // Form submission with loading animation
+        document.getElementById('complaintForm').addEventListener('submit', function (e) {
+            const btn = document.getElementById('submitBtn');
+            const btnLabel = document.getElementById('btnLabel');
+            const btnLoading = document.getElementById('btnLoading');
+
+            btnLabel.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+            btnLoading.classList.add('flex');
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+        });
+
+        // High priority warning logic
+        const categorySelect = document.getElementById('category');
+        const raggingWarning = document.getElementById('raggingWarning');
+        categorySelect.addEventListener('change', function () {
+            if (this.value === 'Ragging') {
+                raggingWarning.classList.remove('hidden');
+                this.classList.add('border-rose-400', 'text-rose-600', 'bg-rose-50/50', 'dark:bg-rose-900/10');
+            } else {
+                raggingWarning.classList.add('hidden');
+                this.classList.remove('border-rose-400', 'text-rose-600', 'bg-rose-50/50', 'dark:bg-rose-900/10');
+            }
+        });
+    });
+</script>
+{% endblock %}

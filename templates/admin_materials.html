@@ -1,0 +1,349 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'materials' %}
+
+{% block title %}Manage Materials | AcademicGov{% endblock %}
+
+{% block main_content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-amber-500 text-4xl">menu_book</span>
+            Course Materials
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">Upload and manage study materials for all subjects.</p>
+    </div>
+</div>
+
+<!-- File Upload Section -->
+<div class="glass-panel p-8 mb-10 border-t-4 border-t-amber-500">
+    <div class="flex flex-col gap-6">
+        <div>
+            <h2 class="text-xl font-display font-bold text-slate-800 flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-500">upload_file</span>
+                Upload New Material
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">Easily distribute lecture notes, syllabus drafts, and assignment
+                briefs.</p>
+        </div>
+
+        <form method="POST" action="/admin/academic/materials" enctype="multipart/form-data" id="uploadForm"
+            class="space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div id="dropZone"
+                class="group relative border-2 border-dashed border-amber-300 rounded-2xl p-10 flex flex-col items-center justify-center bg-amber-50/30 hover:bg-amber-50/80 transition-colors cursor-pointer text-center">
+                <div
+                    class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center text-amber-500 mb-4 group-hover:-translate-y-1 transition-transform border border-amber-100">
+                    <span class="material-symbols-outlined text-3xl">cloud_upload</span>
+                </div>
+                <h5 class="text-lg font-bold text-slate-700 mb-1">Drag & drop file here or <span
+                        class="text-amber-500 underline decoration-amber-500/30 underline-offset-4">click to
+                        browse</span></h5>
+                <p class="text-sm font-medium text-slate-500 mb-6">Supported files: PDF, DOCX, PPTX, JPG (Max 50MB)</p>
+                <input type="file" id="fileInput" name="file" class="hidden" required>
+
+                <div class="w-full max-w-lg space-y-4" onclick="event.stopPropagation()">
+                    <div class="relative">
+                        <select name="subject_id" required
+                            class="w-full bg-white border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 block p-3.5 appearance-none outline-none shadow-sm transition-shadow">
+                            <option value="">-- Select Subject Designation --</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.subject_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span
+                            class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+                    </div>
+
+                    <div class="relative">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">title</span>
+                        <input type="text" name="title" placeholder="Material Title (Optional)"
+                            class="w-full bg-white border border-slate-200 text-slate-800 text-sm font-semibold rounded-xl focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 block p-3.5 pl-12 outline-none shadow-sm transition-shadow">
+                    </div>
+                </div>
+
+                <div class="mt-8" onclick="event.stopPropagation()">
+                    <button type="submit" id="uploadBtn"
+                        class="px-8 py-3.5 rounded-xl text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 transition-all hover:-translate-y-0.5 flex items-center gap-2 mx-auto">
+                        <span class="material-symbols-outlined text-[20px]">send</span>
+                        Publish Material
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Materials Listing Section -->
+<div>
+    <h2 class="text-xl font-display font-bold text-slate-800 flex items-center gap-2 mb-6">
+        <span class="material-symbols-outlined text-amber-500">folder_open</span>
+        Material Repository
+    </h2>
+
+    <!-- Subject Filter Tabs -->
+    <div class="flex flex-wrap items-center gap-2 mb-6" id="subjectTabs">
+        <button
+            class="px-5 py-2.5 rounded-full text-sm font-bold transition-all border shadow-sm tab-btn active-tab bg-amber-500 text-white border-amber-500"
+            data-target="content-all">All Subjects</button>
+        {% for subject in subjects %}
+        <button
+            class="px-5 py-2.5 rounded-full text-sm font-bold transition-all border shadow-sm tab-btn inactive-tab bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+            data-target="content-{{ subject.id }}">{{ subject.subject_name }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- Tab Content -->
+    <div id="subjectTabsContent" class="relative">
+
+        <!-- All Subjects Tab -->
+        <div id="content-all" class="tab-pane active slide-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% set has_any_notes = false %}
+                {% for subject_name, notes in notes_by_subject.items() %}
+                {% if notes %}
+                {% set has_any_notes = true %}
+                {% endif %}
+                {% for note in notes %}
+                <div
+                    class="glass-panel p-5 relative group transition-transform hover:-translate-y-1 hover:shadow-glass-hover flex flex-col h-full hover:border-amber-200/50">
+                    <div class="flex items-start justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">description</span>
+                        </div>
+                        <form method="POST" action="/admin/academic/materials/delete/{{ note.id }}"
+                            onsubmit="return confirm('Are you sure you want to completely remove this material?');"
+                            class="z-10 relative">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                class="w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 shadow-sm flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="flex-1 mb-6">
+                        <h4 class="text-base font-bold text-slate-800 leading-tight mb-2 line-clamp-2"
+                            title="{{ note.title or note.file_path.split('/')[-1] }}">
+                            {{ note.title or note.file_path.split('/')[-1] }}
+                        </h4>
+                        <p class="text-xs font-bold uppercase tracking-wider text-amber-600 mb-2">{{ note.subject_name
+                            }}</p>
+                        <p class="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                            {{ note.uploaded_at.split(' ')[0] if ' ' in note.uploaded_at else note.uploaded_at }}
+                        </p>
+                    </div>
+
+                    <a href="/{{ note.file_path }}" target="_blank" download
+                        class="w-full py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-sm shadow-sm hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-colors flex items-center justify-center gap-2 mt-auto group/dl">
+                        <span
+                            class="material-symbols-outlined text-[18px] group-hover/dl:-translate-y-0.5 transition-transform">download</span>
+                        Download
+                    </a>
+                </div>
+                {% endfor %}
+                {% endfor %}
+
+                {% if not has_any_notes %}
+                <div class="col-span-full py-16 flex flex-col items-center justify-center text-center glass-panel">
+                    <div
+                        class="w-14 h-14 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-300">
+                        <span class="material-symbols-outlined text-3xl">inventory_2</span>
+                    </div>
+                    <h3 class="text-xl font-display font-bold text-slate-800 mb-2">No Materials Uploaded</h3>
+                    <p class="text-slate-500 max-w-sm">Use the form above to start building the repository for your
+                        students.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Individual Subject Tabs -->
+        {% for subject in subjects %}
+        <div id="content-{{ subject.id }}" class="tab-pane hidden slide-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% set subject_notes = notes_by_subject.get(subject.subject_name, []) %}
+                {% if subject_notes %}
+                {% for note in subject_notes %}
+                <div
+                    class="glass-panel p-5 relative group transition-transform hover:-translate-y-1 hover:shadow-glass-hover flex flex-col h-full hover:border-amber-200/50">
+                    <div class="flex items-start justify-between mb-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-2xl">description</span>
+                        </div>
+                        <form method="POST" action="/admin/academic/materials/delete/{{ note.id }}"
+                            onsubmit="return confirm('Are you sure you want to completely remove this material?');"
+                            class="z-10 relative">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                class="w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 shadow-sm flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="flex-1 mb-6">
+                        <h4 class="text-base font-bold text-slate-800 leading-tight mb-2 line-clamp-2"
+                            title="{{ note.title or note.file_path.split('/')[-1] }}">
+                            {{ note.title or note.file_path.split('/')[-1] }}
+                        </h4>
+                        <p class="text-xs font-bold uppercase tracking-wider text-amber-600 mb-2">{{ note.subject_name
+                            }}</p>
+                        <p class="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                            {{ note.uploaded_at.split(' ')[0] if ' ' in note.uploaded_at else note.uploaded_at }}
+                        </p>
+                    </div>
+
+                    <a href="/{{ note.file_path }}" target="_blank" download
+                        class="w-full py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-sm shadow-sm hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-colors flex items-center justify-center gap-2 mt-auto group/dl">
+                        <span
+                            class="material-symbols-outlined text-[18px] group-hover/dl:-translate-y-0.5 transition-transform">download</span>
+                        Download
+                    </a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-span-full py-16 flex flex-col items-center justify-center text-center glass-panel">
+                    <div
+                        class="w-14 h-14 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-300">
+                        <span class="material-symbols-outlined text-3xl">find_in_page</span>
+                    </div>
+                    <h3 class="text-xl font-display font-bold text-slate-800 mb-2">No Materials Found</h3>
+                    <p class="text-slate-500 max-w-sm">There are no materials uploaded yet specifically for {{
+                        subject.subject_name }}.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    .slide-in {
+        animation: slideIn 0.3s ease forwards;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Tab system logic
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active classes from all buttons
+                tabBtns.forEach(b => {
+                    b.classList.remove('active-tab', 'bg-amber-500', 'text-white', 'border-amber-500');
+                    b.classList.add('inactive-tab', 'bg-white', 'text-slate-600', 'border-slate-200');
+                });
+
+                // Add active classes to clicked button
+                btn.classList.remove('inactive-tab', 'bg-white', 'text-slate-600', 'border-slate-200');
+                btn.classList.add('active-tab', 'bg-amber-500', 'text-white', 'border-amber-500');
+
+                // Hide all panes
+                tabPanes.forEach(pane => {
+                    pane.classList.add('hidden');
+                    pane.classList.remove('block');
+                });
+
+                // Show target pane
+                const targetId = btn.getAttribute('data-target');
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) {
+                    targetPane.classList.remove('hidden');
+                    targetPane.classList.add('block');
+                }
+            });
+        });
+
+        // Drag and Drop Logic
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        if (!dropZone) return;
+
+        dropZone.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'OPTION') {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                updateDropZoneText(fileInput.files[0].name);
+            }
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('bg-amber-50/80', 'border-solid', 'border-amber-400');
+            dropZone.classList.remove('bg-amber-50/30', 'border-dashed', 'border-amber-300');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('bg-amber-50/80', 'border-solid', 'border-amber-400');
+            dropZone.classList.add('bg-amber-50/30', 'border-dashed', 'border-amber-300');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            fileInput.files = files;
+
+            if (fileInput.files.length > 0) {
+                updateDropZoneText(fileInput.files[0].name);
+            }
+        }
+
+        function updateDropZoneText(fileName) {
+            const spanText = dropZone.querySelector('h5 span');
+            if (spanText) {
+                spanText.innerHTML = fileName;
+                spanText.classList.remove('underline');
+            }
+            dropZone.classList.add('bg-amber-50/60', 'border-solid');
+            dropZone.classList.remove('border-dashed');
+        }
+    });
+</script>
+{% endblock %}

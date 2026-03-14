@@ -1,0 +1,229 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'dashboard' %}
+
+{% block title %}Bulk Create Students | AcademicGov{% endblock %}
+
+{% block main_content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-4xl">group_add</span>
+            Bulk Create Accounts
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">Easily onboard multiple students or staff members using a structured
+            CSV file.</p>
+    </div>
+    <a href="{{ url_for('admin.admin_dashboard') }}"
+        class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Dashboard
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8">
+    <!-- Upload Form -->
+    <div class="glass-panel p-6 sm:p-8 border-t-4 border-t-primary">
+        <h2
+            class="text-xl font-display font-bold text-slate-800 flex items-center gap-2 mb-6 pb-4 border-b border-slate-200/60">
+            <span class="material-symbols-outlined text-primary">upload_file</span>
+            Upload CSV Data
+        </h2>
+
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.bulk_create_students') }}"
+            class="space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="space-y-3">
+                <label class="text-sm font-bold text-slate-700 block">Select CSV File <span
+                        class="text-rose-500">*</span></label>
+
+                <div class="relative">
+                    <input type="file" name="csv_file" accept=".csv" required id="csvFileInput" class="hidden">
+
+                    <label for="csvFileInput" id="dropZone"
+                        class="group border-2 border-dashed border-slate-300 hover:border-primary bg-slate-50/50 hover:bg-primary/5 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all text-center">
+                        <div
+                            class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center text-primary mb-4 group-hover:-translate-y-1 transition-transform border border-slate-200 group-hover:border-primary/30">
+                            <span class="material-symbols-outlined text-3xl">cloud_upload</span>
+                        </div>
+                        <h5 class="text-[15px] font-bold text-slate-700 mb-1">Drag & drop your CSV here</h5>
+                        <p class="text-[13px] font-medium text-slate-500 mb-2">or <span
+                                class="text-primary font-bold underline decoration-primary/30 underline-offset-2">browse
+                                files</span></p>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Max size: 16 MB</p>
+                    </label>
+                </div>
+
+                <!-- dynamic preview container -->
+                <div id="filePreview"
+                    class="hidden mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                            <span class="material-symbols-outlined">csv</span>
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-bold text-emerald-800 truncate" id="fileName">filename.csv</p>
+                            <p class="text-xs font-semibold text-emerald-600/80">Ready to upload</p>
+                        </div>
+                    </div>
+                    <button type="button" id="clearFile"
+                        class="w-8 h-8 rounded-full hover:bg-emerald-200/50 flex items-center justify-center text-emerald-600 transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-200/60">
+                <button type="submit" id="submitBtn" disabled
+                    class="w-full px-5 py-3.5 rounded-xl text-sm font-bold text-white bg-slate-400 cursor-not-allowed transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">group_add</span>
+                    Create Accounts
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Format Guide -->
+    <div class="glass-panel p-6 sm:p-8 bg-slate-50/50">
+        <h3 class="text-lg font-display font-bold text-slate-800 flex items-center gap-2 mb-6">
+            <span class="material-symbols-outlined text-amber-500">info</span>
+            CSV Formatting Guide
+        </h3>
+
+        <div class="space-y-6">
+            <div>
+                <p class="text-sm font-semibold text-slate-600 mb-4 leading-relaxed">Ensure your file is a valid <code
+                        class="bg-slate-200/60 px-1.5 py-0.5 rounded text-slate-800 font-mono text-[13px]">.csv</code>
+                    with proper headers. The system relies on exactly matching column names.</p>
+
+                <ul class="space-y-3 mb-6">
+                    <li class="flex items-start gap-3 text-sm">
+                        <span
+                            class="material-symbols-outlined text-rose-500 text-[18px] mt-0.5 shrink-0">emergency</span>
+                        <div>
+                            <span class="font-bold text-slate-800 block mb-0.5">Required Column</span>
+                            <code
+                                class="bg-rose-50 text-rose-600 border border-rose-100 px-2 py-0.5 rounded font-mono text-[12px] font-bold">email</code>
+                            - Must be a valid format.
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3 text-sm">
+                        <span class="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0">tune</span>
+                        <div>
+                            <span class="font-bold text-slate-800 block mb-0.5">Optional Column</span>
+                            <code
+                                class="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded font-mono text-[12px] font-bold">role</code>
+                            - Defaults to <code class="text-primary font-bold">student</code> if omitted. Accepts <code
+                                class="text-primary font-bold">student</code> or <code
+                                class="text-primary font-bold">admin</code>.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 pl-1">Example Format</h4>
+                <div
+                    class="bg-[#1e293b] rounded-xl p-4 shadow-inner border border-slate-700/50 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-primary/80"></div>
+                    <pre class="font-mono text-[13px] leading-relaxed text-slate-300 overflow-x-auto hidden-scroll"><span class="text-emerald-400 font-bold">email</span>,<span class="text-emerald-400 font-bold">role</span>
+alice@college.edu,student
+bob@college.edu,student
+prof.smith@college.edu,admin</pre>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200/60 rounded-xl p-4 flex gap-3">
+                <span class="material-symbols-outlined text-amber-500 shrink-0">lightbulb</span>
+                <div class="text-[13px] font-medium text-amber-800/80 space-y-1.5">
+                    <p>Duplicate emails found in the database are <strong class="text-amber-900">skipped
+                            silently</strong>.</p>
+                    <p>Invalid emails are skipped with a warning message on completion.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.getElementById('csvFileInput');
+        const dropZone = document.getElementById('dropZone');
+        const preview = document.getElementById('filePreview');
+        const nameEl = document.getElementById('fileName');
+        const clearBtn = document.getElementById('clearFile');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function updateUI() {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                nameEl.textContent = file.name;
+
+                // Show preview, hide dropzone
+                preview.classList.remove('hidden');
+                dropZone.classList.add('hidden');
+
+                // Enable button
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-slate-400', 'cursor-not-allowed');
+                submitBtn.classList.add('bg-primary', 'hover:bg-secondary', 'shadow-lg', 'shadow-primary/30', 'hover:shadow-primary/50', 'hover:-translate-y-0.5');
+            } else {
+                // Hide preview, show dropzone
+                preview.classList.add('hidden');
+                dropZone.classList.remove('hidden');
+
+                // Disable button
+                submitBtn.disabled = true;
+                submitBtn.classList.add('bg-slate-400', 'cursor-not-allowed');
+                submitBtn.classList.remove('bg-primary', 'hover:bg-secondary', 'shadow-lg', 'shadow-primary/30', 'hover:shadow-primary/50', 'hover:-translate-y-0.5');
+            }
+        }
+
+        fileInput.addEventListener('change', updateUI);
+
+        clearBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fileInput.value = '';
+            updateUI();
+        });
+
+        // Drag and drop support
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('border-primary', 'bg-primary/5');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('border-primary', 'bg-primary/5');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+
+            // Only accept CSV
+            if (files.length > 0 && files[0].name.toLowerCase().endsWith('.csv')) {
+                fileInput.files = files;
+                updateUI();
+            } else {
+                alert('Please upload a valid .csv file.');
+            }
+        }, false);
+    });
+</script>
+{% endblock %}

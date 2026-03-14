@@ -1,0 +1,322 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'feedback' %}
+
+{% block title %}Share Experience | AcademicGov{% endblock %}
+
+{% block main_content %}
+<style>
+    .info-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .dark .info-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-card:hover {
+        border-color: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1);
+    }
+
+    .compact-button-large {
+        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 16px;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .compact-button-large:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .form-input {
+        display: block;
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 0.75rem 1rem;
+        transition: all 0.2s;
+    }
+
+    .dark .form-input {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: #334155;
+        color: white;
+    }
+
+    .form-input:focus {
+        border-color: #6366f1;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        outline: none;
+    }
+
+    /* Star Rating Refined */
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .star-rating input {
+        display: none;
+    }
+
+    .star-rating label {
+        cursor: pointer;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        color: #94a3b8;
+    }
+
+    .dark .star-rating label {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: #334155;
+    }
+
+    .star-rating label:hover,
+    .star-rating label:hover~label,
+    .star-rating input:checked~label {
+        color: #f59e0b;
+        background: rgba(251, 191, 36, 0.1);
+        border-color: #f59e0b;
+    }
+
+    .star-rating label:hover .material-symbols-outlined,
+    .star-rating label:hover~label .material-symbols-outlined,
+    .star-rating input:checked~label .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1;
+    }
+</style>
+
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="mb-10 text-center">
+        <div class="flex justify-center mb-4">
+            <span
+                class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border border-indigo-100 dark:border-indigo-800/50">
+                <span class="material-symbols-outlined text-sm">verified_user</span>
+                100% Anonymous Feedback
+            </span>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900 dark:text-white leading-tight">Academic Feedback</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-3 text-sm leading-relaxed max-w-2xl mx-auto">
+            Share your thoughts on subjects and teaching quality. Your input directly influences future curriculum
+            improvements.
+        </p>
+    </div>
+
+    <div class="info-card p-8 lg:p-12">
+        <form action="{{ url_for('student.academic_feedback') }}" class="space-y-6" id="feedbackForm" method="POST">
+            <input name="csrf_token" type="hidden" value="{{ csrf_token() if csrf_token else '' }}" />
+
+            <div class="space-y-3">
+                <label class="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                    for="subject">
+                    Select Subject <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <select class="form-input appearance-none pr-10" id="subject" name="subject" required="">
+                        <option disabled="" selected="" value="">Choose a subject</option>
+                        <option value="Data Structures">Data Structures</option>
+                        <option value="Database Management">Database Management</option>
+                        <option value="Computer Networks">Computer Networks</option>
+                        <option value="Operating Systems">Operating Systems</option>
+                        <option value="Software Engineering">Software Engineering</option>
+                        <option value="Web Development">Web Development</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                        <span class="material-symbols-outlined">expand_more</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <label class="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                    Rate Your Experience <span class="text-rose-500">*</span>
+                </label>
+                <div class="flex flex-col gap-3">
+                    <div class="star-rating" id="starRating">
+                        <input id="star5" name="rating" required="" type="radio" value="5" />
+                        <label for="star5" title="5 stars"><span class="material-symbols-outlined">star</span></label>
+                        <input id="star4" name="rating" type="radio" value="4" />
+                        <label for="star4" title="4 stars"><span class="material-symbols-outlined">star</span></label>
+                        <input id="star3" name="rating" type="radio" value="3" />
+                        <label for="star3" title="3 stars"><span class="material-symbols-outlined">star</span></label>
+                        <input id="star2" name="rating" type="radio" value="2" />
+                        <label for="star2" title="2 stars"><span class="material-symbols-outlined">star</span></label>
+                        <input id="star1" name="rating" type="radio" value="1" />
+                        <label for="star1" title="1 star"><span class="material-symbols-outlined">star</span></label>
+                    </div>
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest" id="ratingText">Click
+                        to rate</div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex justify-between items-end">
+                    <label class="block text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest"
+                        for="comment">
+                        Detailed Feedback
+                    </label>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <span id="charCount">0</span> / 500
+                    </span>
+                </div>
+                <textarea class="form-input min-h-[240px] resize-none" id="comment" name="comment"
+                    placeholder="Tell us about the course content, teaching style, or materials..."></textarea>
+            </div>
+
+            <div class="hidden bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100/50 dark:border-indigo-800/20 rounded-2xl p-6 transition-all duration-300 transform scale-95"
+                id="sentimentBox">
+                <div class="flex gap-5">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-indigo-600 dark:text-indigo-400 text-2xl"
+                            id="sentimentIcon">magic_button</span>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-black text-slate-800 dark:text-slate-200" id="sentimentTitle">Sentiment
+                            Analysis</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium"
+                            id="sentimentText">
+                            We'll analyze your feedback sentiment automatically.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="compact-button-large w-full mt-2" id="submitBtn" type="submit">
+                <span class="flex items-center gap-2" id="btnLabel">
+                    <span class="material-symbols-outlined text-xl">send</span>
+                    Proceed with Feedback
+                </span>
+                <span class="hidden flex items-center gap-2" id="btnLoading">
+                    <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            fill="currentColor"></path>
+                    </svg>
+                    Submitting Anonymously...
+                </span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Rating Interaction
+        const starRating = document.getElementById('starRating');
+        const ratingText = document.getElementById('ratingText');
+        const ratingLabels = {
+            1: 'Needs Improvement',
+            2: 'Below Average',
+            3: 'Satisfactory',
+            4: 'Very Good',
+            5: 'Outstanding Experience'
+        };
+
+        starRating.addEventListener('change', function (e) {
+            const val = e.target.value;
+            ratingText.textContent = ratingLabels[val];
+            ratingText.classList.add('text-indigo-600', 'dark:text-indigo-400', 'font-black');
+        });
+
+        // Character counter
+        const comment = document.getElementById('comment');
+        const charCount = document.getElementById('charCount');
+        const sentimentBox = document.getElementById('sentimentBox');
+        const sentimentText = document.getElementById('sentimentText');
+        const sentimentIcon = document.getElementById('sentimentIcon');
+        const sentimentTitle = document.getElementById('sentimentTitle');
+
+        const positiveWords = ['good', 'great', 'excellent', 'amazing', 'wonderful', 'best', 'love', 'like', 'happy', 'satisfied'];
+        const negativeWords = ['bad', 'poor', 'terrible', 'awful', 'worst', 'hate', 'dislike', 'unhappy', 'disappointed', 'problem'];
+
+        comment.addEventListener('input', function () {
+            const length = this.value.length;
+            charCount.textContent = length;
+
+            if (length > 0) {
+                sentimentBox.classList.remove('hidden');
+                setTimeout(() => {
+                    sentimentBox.classList.remove('opacity-0', 'scale-95');
+                }, 10);
+            } else {
+                sentimentBox.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    sentimentBox.classList.add('hidden');
+                }, 300);
+            }
+
+            if (length > 500) {
+                this.value = this.value.substring(0, 500);
+                charCount.textContent = 500;
+            }
+
+            // Real-time sentiment (Front-end preview)
+            const text = this.value.toLowerCase();
+            let posCount = positiveWords.filter(w => text.includes(w)).length;
+            let negCount = negativeWords.filter(w => text.includes(w)).length;
+
+            if (posCount > negCount) {
+                sentimentText.textContent = 'Our system detects a positive tone in your feedback. Thank you!';
+                sentimentIcon.textContent = 'sentiment_very_satisfied';
+                sentimentIcon.className = 'material-symbols-outlined text-emerald-500 text-2xl';
+                sentimentTitle.textContent = 'Positive Sentiment';
+            } else if (negCount > posCount) {
+                sentimentText.textContent = 'Detected a critical tone. We will prioritize reviewing this to improve quality.';
+                sentimentIcon.textContent = 'sentiment_dissatisfied';
+                sentimentIcon.className = 'material-symbols-outlined text-rose-500 text-2xl';
+                sentimentTitle.textContent = 'Constructive Feedback';
+            } else {
+                sentimentText.textContent = 'Feedback tone is currently balanced. Continue writing for more accurate analysis.';
+                sentimentIcon.textContent = 'sentiment_neutral';
+                sentimentIcon.className = 'material-symbols-outlined text-indigo-500 text-2xl';
+                sentimentTitle.textContent = 'Balanced Sentiment';
+            }
+        });
+
+        // Form submission with loading animation
+        document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+            const btn = document.getElementById('submitBtn');
+            const btnLabel = document.getElementById('btnLabel');
+            const btnLoading = document.getElementById('btnLoading');
+
+            btnLabel.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+            btnLoading.classList.add('flex');
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            btn.disabled = true;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "layouts/admin_standalone_base.html" %}
+{% set active_module = 'labs' %}
+
+{% block title %}Advanced Labs Management | AcademicGov{% endblock %}
+
+{% block main_content %}
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-display font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-4xl">computer</span>
+            Advanced Labs Management
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">Monitor computer statuses and manage lab layouts.</p>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="glass-panel p-6 border-l-4 border-l-primary flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-2xl">devices</span>
+        </div>
+        <div>
+            <div class="text-3xl font-display font-bold text-slate-800 leading-none mb-1">{{ lab_summary.total }}</div>
+            <div class="text-sm font-bold uppercase tracking-wider text-slate-500">Total Systems</div>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 border-l-4 border-l-emerald-500 flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 shrink-0">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
+        </div>
+        <div>
+            <div class="text-3xl font-display font-bold text-slate-800 leading-none mb-1">{{ lab_summary.working }}
+            </div>
+            <div class="text-sm font-bold uppercase tracking-wider text-slate-500">Active & Ready</div>
+        </div>
+    </div>
+
+    <div class="glass-panel p-6 border-l-4 border-l-rose-500 flex items-center gap-4">
+        <div class="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
+            <span class="material-symbols-outlined text-2xl">build</span>
+        </div>
+        <div>
+            <div class="text-3xl font-display font-bold text-slate-800 leading-none mb-1">{{ lab_summary.not_working }}
+            </div>
+            <div class="text-sm font-bold uppercase tracking-wider text-slate-500">Needs Maintenance</div>
+        </div>
+    </div>
+</div>
+
+<!-- Lab Buttons Grid -->
+<h2 class="text-xl font-display font-bold text-slate-800 flex items-center gap-2 mb-6">
+    <span class="material-symbols-outlined text-primary">view_quilt</span>
+    Select Lab to Manage
+</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for lab in labs %}
+    <a href="{{ url_for('admin.admin_labs_layout', lab_id=lab.id) }}"
+        class="glass-panel p-6 group transition-all hover:-translate-y-1 hover:shadow-glass-hover border border-slate-200/60 hover:border-primary/30 flex flex-col h-full relative overflow-hidden text-left">
+        <div class="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-500">
+            <span class="material-symbols-outlined text-8xl">dns</span>
+        </div>
+
+        <div class="relative z-10 flex-1">
+            <div
+                class="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                <span class="material-symbols-outlined rounded text-2xl">desktop_windows</span>
+            </div>
+            <h4 class="text-lg font-bold text-slate-800 mb-1 group-hover:text-primary transition-colors">{{ lab.lab_name
+                }}</h4>
+            <p class="text-sm text-slate-500">Manage layout & real-time status</p>
+        </div>
+
+        <div
+            class="relative z-10 mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-primary">
+            <span>Open Layout</span>
+            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

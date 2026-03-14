@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>{% block title %}AcademicGov{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        rel="stylesheet" />
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind_compiled.css') }}">
+
+
+    <style>
+        :root {
+            --primary-indigo: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-slate: #f8fafc;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            background-color: var(--bg-slate);
+            color: #1e293b;
+            min-height: max(884px, 100dvh);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .font-jakarta {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s duration;
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .nav-item:hover {
+            background-color: #eef2ff;
+            color: #4f46e5;
+            padding-left: 1.25rem;
+        }
+
+        .nav-item:hover .material-symbols-outlined {
+            transform: translateX(2px) scale(1.1);
+        }
+
+        .nav-item.active {
+            background-color: #eef2ff;
+            color: #4338ca;
+            font-weight: 600;
+            border-right: 3px solid var(--primary-indigo);
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes wiggle {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(10deg);
+            }
+
+            75% {
+                transform: rotate(-10deg);
+            }
+        }
+
+        .animate-wiggle:hover .material-symbols-outlined {
+            animation: wiggle 0.4s ease-in-out infinite;
+        }
+
+        .sidebar {
+            width: 260px;
+        }
+
+        /* Glassmorphism Styles */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.03);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .dark .input-glass {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            border: 1px solid #f1f5f9;
+        }
+
+        .info-card:hover {
+            border-color: rgba(79, 70, 229, 0.2);
+            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1), 0 10px 10px -5px rgba(79, 70, 229, 0.04);
+            transform: translateY(-4px);
+        }
+
+        .info-card:hover .material-symbols-outlined {
+            transform: scale(1.2) rotate(8deg);
+            color: var(--primary-indigo);
+        }
+
+        .search-container-main {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-input-main:focus {
+            max-width: 100% !important;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .compact-button-large {
+            background-color: var(--primary-indigo);
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .compact-button-large:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .form-input,
+        .form-input-premium {
+            display: block;
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-input-premium:focus {
+            border-color: #6366f1;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+        }
+
+        .gradient-ring {
+            background: conic-gradient(#4F46E5 0%, #4F46E5 75%, #E2E8F0 75%, #E2E8F0 100%);
+        }
+
+        .dark .gradient-ring {
+            background: conic-gradient(#6366F1 0%, #6366F1 75%, #334155 75%, #334155 100%);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+        }
+
+        /* Creative Logo Hover Hint */
+        #sidebarToggle {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #sidebarToggle .logo-icon-container {
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #sidebarToggle:hover .logo-icon-container {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        #sidebarToggle .menu-hint {
+            position: absolute;
+            right: -60px;
+            opacity: 0;
+            background: #4f46e5;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(20px);
+        }
+
+        #sidebarToggle:hover .menu-hint {
+            right: 12px;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        #sidebarToggle:hover {
+            background-color: #eef2ff !important;
+            padding-right: 4rem !important;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
+    <!-- Sidebar Backdrop -->
+    <div id="sidebarBackdrop"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300">
+    </div>
+
+    <!-- Offcanvas Sidebar -->
+    <aside id="offcanvasSidebar"
+        class="fixed top-0 left-0 h-full w-[260px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 transform -translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+        <div class="px-6 py-4 flex flex-col h-full overflow-y-auto">
+            <div class="flex items-center justify-between gap-2 mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined text-lg font-bold">school</span>
+                    </div>
+                    <span
+                        class="font-jakarta font-bold text-lg tracking-tight text-slate-900 dark:text-white">Academic<span
+                            class="text-indigo-600">Gov</span></span>
+                </div>
+                <button id="closeSidebarBtn"
+                    class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+            </div>
+            <div class="mb-4">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2">Main Menu</p>
+                <nav class="space-y-1">
+                    <a class="nav-item {% if request.endpoint == 'student.dashboard' %}active{% endif %}"
+                        href="{{ url_for('student.dashboard') }}">
+                        <span class="material-symbols-outlined text-xl">grid_view</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a class="nav-item {% if request.endpoint == 'student.raise_complaint' %}active{% endif %}"
+                        href="{{ url_for('student.raise_complaint') }}">
+                        <span class="material-symbols-outlined text-xl">report_problem</span>
+                        <span>Raise Complaint</span>
+                    </a>
+                    <a class="nav-item {% if request.endpoint == 'student.track_complaint' %}active{% endif %}"
+                        href="{{ url_for('student.track_complaint') }}">
+                        <span class="material-symbols-outlined text-xl">my_location</span>
+                        <span>Track Complaint</span>
+                    </a>
+                    <a class="nav-item {% if request.endpoint == 'student.academic_feedback' %}active{% endif %}"
+                        href="{{ url_for('student.academic_feedback') }}">
+                        <span class="material-symbols-outlined text-xl">rate_review</span>
+                        <span>Feedback</span>
+                    </a>
+                    <a class="nav-item {% if request.endpoint and request.endpoint.startswith('student.placement') %}active{% endif %}"
+                        href="{{ url_for('student.placement_index') }}">
+                        <span class="material-symbols-outlined text-xl">rocket</span>
+                        <span>Placement</span>
+                    </a>
+                    {% if session.get('role') == 'student' %}
+                    <a class="nav-item {% if request.endpoint == 'student.lab_index' %}active{% endif %}"
+                        href="{{ url_for('student.lab_index') }}">
+                        <span class="material-symbols-outlined text-xl">science</span>
+                        <span>Lab Status</span>
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+        <div class="mt-auto p-4 border-t border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800 shadow-sm overflow-hidden flex justify-center items-center">
+                    <span class="material-symbols-outlined text-slate-400">person</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-900 dark:text-white truncate">{{
+                        session.user_email.split('@')[0] if session.user_email else 'Student' }}</p>
+                    <p class="text-[10px] text-slate-500 truncate">Student ID Hidden</p>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <span class="material-symbols-outlined text-lg">logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 min-w-0 flex flex-col relative overflow-hidden h-full">
+        <!-- Top Header -->
+        <header
+            class="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0">
+            <!-- Left: Menu Trigger (Icon only for privacy/cleanliness) -->
+            <div class="flex-1 flex items-center">
+                <div id="sidebarToggle"
+                    class="flex items-center gap-2 cursor-pointer group p-2 rounded-xl transition-all duration-300 -ml-2">
+                    <div
+                        class="logo-icon-container w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-sm">
+                        <span class="material-symbols-outlined font-bold">school</span>
+                    </div>
+                    <span class="menu-hint">Menu</span>
+                </div>
+            </div>
+
+            <!-- Center: Search Bar (Centered and Professional) -->
+            <div class="flex-1 flex justify-center px-4 hidden sm:flex">
+                <div class="search-container-main relative w-full max-w-md">
+                    <span
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl font-light">search</span>
+                    <input
+                        class="search-input-main w-full bg-slate-50 border border-slate-200 rounded-full py-2 pl-12 pr-4 text-sm focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/30 transition-all placeholder:text-slate-400 font-medium"
+                        placeholder="Search data..." type="text" />
+                </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="flex-1 flex items-center justify-end gap-3 lg:gap-4">
+                <button
+                    class="animate-wiggle p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors relative">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-bold leading-none">{{ session.get('student_id', 'Student') }}</p>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Student</p>
+                    </div>
+                    <div
+                        class="w-9 h-9 bg-indigo-600/10 text-indigo-600 rounded-full flex items-center justify-center font-bold">
+                        {{ session.get('student_id', 'S')[0] }}</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full pb-16">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const offcanvasSidebar = document.getElementById('offcanvasSidebar');
+            const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+            function openSidebar() {
+                offcanvasSidebar.classList.remove('-translate-x-full');
+                sidebarBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            function closeSidebar() {
+                offcanvasSidebar.classList.add('-translate-x-full');
+                sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+            }
+
+            if (sidebarToggle) sidebarToggle.addEventListener('click', openSidebar);
+            if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+            if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

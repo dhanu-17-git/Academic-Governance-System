@@ -1,0 +1,17 @@
+[Unit]
+Description=Academic Governance System
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/academic-governance-system
+Environment=FLASK_ENV=production
+EnvironmentFile=/opt/academic-governance-system/.env.production
+ExecStart=/opt/academic-governance-system/venv/bin/gunicorn -c deployment/gunicorn.conf.py wsgi:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

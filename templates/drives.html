@@ -1,0 +1,174 @@
+{% extends "layouts/student_base.html" %}
+{% block title %}Drives | Placement Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-4xl">work</span>
+                Placement Portal
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">Track your readiness, apply for drives, and explore
+                careers.</p>
+        </div>
+        <div
+            class="bg-indigo-50 dark:bg-primary/10 border border-primary/20 px-4 py-2 rounded-full flex items-center gap-2 text-primary font-bold text-sm shadow-sm">
+            <span class="material-symbols-outlined text-lg">campaign</span>
+            3 New Drives
+        </div>
+    </div>
+    <div class="flex gap-2 mb-10 overflow-x-auto no-scrollbar pb-2">
+        <a href="{{ url_for('student.placement_profile') }}"
+            class="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-6 py-2.5 rounded-full font-bold hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+            <span class="material-symbols-outlined text-lg">person</span> Profile
+        </a>
+        <a href="{{ url_for('student.drives') }}"
+            class="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/20 transition-transform active:scale-95">
+            <span class="material-symbols-outlined text-lg">rocket_launch</span> Drives
+        </a>
+        <a href="{{ url_for('student.applications') }}"
+            class="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-6 py-2.5 rounded-full font-bold hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+            <span class="material-symbols-outlined text-lg">description</span> Applications
+        </a>
+        <a href="{{ url_for('student.career_paths') }}"
+            class="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-6 py-2.5 rounded-full font-bold hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+            <span class="material-symbols-outlined text-lg">map</span> Career Paths
+        </a>
+    </div>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <h2 class="text-xl font-bold">Ongoing &amp; Upcoming Drives</h2>
+        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            <div class="relative min-w-[160px] flex-grow sm:flex-grow-0">
+                <select
+                    class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2.5 pl-5 pr-10 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none">
+                    <option>All Roles</option>
+                    <option>Software Engineer</option>
+                    <option>Data Analyst</option>
+                    <option>Product Manager</option>
+                </select>
+                <span
+                    class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+            </div>
+            <div class="relative flex-grow sm:w-64">
+                <span
+                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                <input
+                    class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full py-2.5 pl-11 pr-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400"
+                    placeholder="Search Company" type="text" />
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+            class="glass p-6 rounded-3xl card-shadow flex flex-col h-full group hover:translate-y-[-4px] transition-all duration-300">
+            <div class="flex justify-between items-start mb-6">
+                <div
+                    class="w-14 h-14 bg-white rounded-2xl p-2 flex items-center justify-center shadow-sm border border-slate-100">
+                    <img alt="Amazon" class="w-full h-auto"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD4gBzKWPWvhdHyqriof2EXZmJqKS8vtNKk1cES4p684HkY9mKtHxXX24_2Xx9csvrNggRBrBa1k52ZLgmCwohdJFVcXBV9PKAE_f-4ouH-AfhOUmFkFsh73rXGUNxrlNSwmSy62S5uH5SWbNDlkEo6foe__LyaJ_zoS3bbauOJqGyXri7Sj_hU6UVeI-HMrwR3hCivfq_z3E10W6P834769ocTtNMZst-VNNxpDY53JUKmOm3CzyZDIL2HWaP7zRwdGLT6OCYD3yb" />
+                </div>
+                <div
+                    class="bg-red-50 text-red-600 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-bold border border-red-100">
+                    <span class="material-symbols-outlined text-sm">schedule</span>
+                    Exp. in 2 Days
+                </div>
+            </div>
+            <h3 class="text-xl font-extrabold mb-1">Software Dev Engineer</h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium mb-6">Amazon India</p>
+            <div class="flex flex-wrap gap-2 mb-8">
+                <span
+                    class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">payments</span>
+                    24 LPA
+                </span>
+                <span
+                    class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">location_on</span>
+                    Bangalore
+                </span>
+            </div>
+            <div class="mt-auto grid grid-cols-2 gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <button
+                    class="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    View Details
+                </button>
+                <button
+                    class="w-full py-3 px-4 rounded-xl bg-primary text-white font-bold text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
+                    Apply Now
+                </button>
+            </div>
+        </div>
+        <div
+            class="glass p-6 rounded-3xl card-shadow flex flex-col h-full group hover:translate-y-[-4px] transition-all duration-300">
+            <div class="flex justify-between items-start mb-6">
+                <div
+                    class="w-14 h-14 bg-white rounded-2xl p-2 flex items-center justify-center shadow-sm border border-slate-100">
+                    <img alt="Microsoft" class="w-full h-auto"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAX-po4OX4KDqiIIGXjbF7lQFYrJ84l5jsoEChLoxkMHCg-d_NoHFVJOzGd3fVnFC9ZhN5mE5NcNFBt4FBkYH1JrlxteKt6gus6e1GF-NaaT9Luy08JlyMkRt7iDIkN2FQpUIiY7lq5YSNnzRs6rJ61ztXNwUI3VzEhhI3Sndx6VFVHtrZPEhRbu_zFgFmtRA3-yEGrx7tFbQWGXmfTeHdbLQ0iBqznYGNxrqYzCP-EeU-EvQ0LgEoApzhTfIuSSnbmYqgCs_D5VF5p" />
+                </div>
+            </div>
+            <h3 class="text-xl font-extrabold mb-1">Cloud Engineer</h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium mb-6">Microsoft</p>
+            <div class="flex flex-wrap gap-2 mb-8">
+                <span
+                    class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">payments</span>
+                    18 LPA
+                </span>
+                <span
+                    class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">location_on</span>
+                    Hyderabad
+                </span>
+            </div>
+            <div class="mt-auto grid grid-cols-2 gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <button
+                    class="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    View Details
+                </button>
+                <button
+                    class="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-400 font-bold text-sm flex items-center justify-center gap-2 cursor-default">
+                    <span class="material-symbols-outlined text-lg fill-1">progress_activity</span>
+                    Applied
+                </button>
+            </div>
+        </div>
+        <div
+            class="glass p-6 rounded-3xl card-shadow flex flex-col h-full group hover:translate-y-[-4px] transition-all duration-300">
+            <div class="flex justify-between items-start mb-6">
+                <div
+                    class="w-14 h-14 bg-white rounded-2xl p-2 flex items-center justify-center shadow-sm border border-slate-100">
+                    <img alt="Google" class="w-8 h-8"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg6pXf834zN20IUsQaSRs9-w9rnK-bBW_7CNngYnj74p2IpclzP5mXksJvTVbGCTWcN3IZeTbDD9DS4B1funy_czHUlF71h3Hw74ulo-GQYp5qsSHdzixhgGD-u53R-VevkhJT2z5AaId6UTZoX46Of8DOdXSVY4_DARr7u2AYYCC7cRVQ9U-sSmzfw0UZVTJb97zFFpsKVQ4Zkf-LP2PLUOsmwQPJ9OpBA0ZXntYrQIFci-nzqMTB3Ez70DQyfB5aJm-J5Z9sZ78t" />
+                </div>
+            </div>
+            <h3 class="text-xl font-extrabold mb-1">Data Analyst</h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium mb-6">Google</p>
+            <div class="flex flex-wrap gap-2 mb-8">
+                <span
+                    class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">payments</span>
+                    15 LPA
+                </span>
+                <span
+                    class="bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">location_on</span>
+                    Remote
+                </span>
+            </div>
+            <div class="mt-auto grid grid-cols-2 gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <button
+                    class="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    View Details
+                </button>
+                <button
+                    class="w-full py-3 px-4 rounded-xl bg-emerald-500/10 text-emerald-600 font-bold text-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-lg">check_circle</span>
+                    Shortlisted
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

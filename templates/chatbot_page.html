@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<section class="container mx-auto px-4 py-10">
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+    <h1 class="text-3xl font-bold text-slate-900 mb-4">ARIA Academic Advisor</h1>
+    <p class="text-slate-600 mb-6">Use the floating chat widget to ask about attendance, marks, timetable, and grievance status.</p>
+    <p class="text-sm text-slate-500">The widget is available only for logged-in sessions and now uses standard CSRF protection.</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+# Version control
+.git
+.github
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+.uv-cache
+
+# Node
+node_modules
+package-lock.json
+
+# Environment
+.env
+.env.*
+
+# Tests
+tests/
+
+# IDE
+.vscode
+.idea
+
+# Project artifacts
+docs/
+codex_reports/
+ai-tool-kit/
+logs/
+uploads/
+*.log
+*.db
+
+# OS
+.DS_Store
+Thumbs.db

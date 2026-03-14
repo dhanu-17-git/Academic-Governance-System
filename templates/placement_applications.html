@@ -1,0 +1,150 @@
+{% extends "layouts/student_standalone_base.html" %}
+
+{% set active_module = 'placement' %}
+{% set active_page = 'applications' %}
+
+{% block title %}Applications | Placement Portal{% endblock %}
+
+{% block main_content %}
+<!-- Sub-navigation Tabs -->
+<div class="mb-8 overflow-x-auto">
+    <div class="flex items-center gap-4 mb-2 min-w-max pb-2">
+        <a href="{{ url_for('student.placement_profile') }}"
+            class="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all {% if active_page == 'profile' %}bg-white text-primary shadow-sm{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/50{% endif %}">Profile</a>
+        <a href="{{ url_for('student.placement_drives') }}"
+            class="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all {% if active_page == 'drives' %}bg-white text-primary shadow-sm{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/50{% endif %}">Drives</a>
+        <a href="{{ url_for('student.placement_applications') }}"
+            class="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all {% if active_page == 'applications' %}bg-white text-primary shadow-sm{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/50{% endif %}">Applications</a>
+        <a href="{{ url_for('student.placement_career') }}"
+            class="px-6 py-2.5 rounded-2xl text-sm font-bold transition-all {% if active_page == 'career' %}bg-white text-primary shadow-sm{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/50{% endif %}">Career
+            Paths</a>
+    </div>
+</div>
+
+<div class="glass p-8 rounded-3xl shadow-sm border border-white/40">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">My Applications</h2>
+        <div
+            class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">
+            <span class="material-symbols-outlined text-base">list_alt</span>
+            3 Total
+        </div>
+    </div>
+    <div class="overflow-x-auto no-scrollbar">
+        <table class="w-full text-left border-separate border-spacing-y-4">
+            <thead>
+                <tr class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                    <th class="px-4 py-2">Company &amp; Role</th>
+                    <th class="px-4 py-2">Applied Date</th>
+                    <th class="px-4 py-2">Status</th>
+                    <th class="px-4 py-2 text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody class="space-y-4">
+                <!-- Microsoft Application -->
+                <tr
+                    class="group hover:bg-white/50 dark:hover:bg-white/5 transition-colors duration-200 rounded-2xl overflow-hidden">
+                    <td
+                        class="px-4 py-6 bg-white dark:bg-slate-900 rounded-l-2xl border-y border-l border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center p-2 border border-blue-100 dark:border-blue-800/50 group-hover:rotate-6 transition-transform">
+                                <span class="material-symbols-outlined text-blue-600 font-bold">cloud</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-white leading-none">Cloud Engineer</h4>
+                                <p class="text-sm text-slate-500 mt-1">Microsoft</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                        <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Oct 12, 2024</span>
+                    </td>
+                    <td class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                        <span
+                            class="px-3 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30">
+                            Under Review
+                        </span>
+                    </td>
+                    <td
+                        class="px-4 py-6 bg-white dark:bg-slate-900 rounded-r-2xl border-y border-r border-slate-100 dark:border-slate-800 text-right">
+                        <button
+                            class="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            View Job
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Google Application -->
+                <tr
+                    class="group hover:bg-white/50 dark:hover:bg-white/5 transition-colors duration-200 rounded-2xl overflow-hidden">
+                    <td
+                        class="px-4 py-6 bg-white dark:bg-slate-900 rounded-l-2xl border-y border-l border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center p-2 border border-rose-100 dark:border-rose-800/50 group-hover:rotate-6 transition-transform">
+                                <span class="material-symbols-outlined text-rose-600 font-bold">search_insights</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-white leading-none">Data Analyst</h4>
+                                <p class="text-sm text-slate-500 mt-1">Google</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                        <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Oct 05, 2024</span>
+                    </td>
+                    <td class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                        <span
+                            class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30 whitespace-nowrap">
+                            <span class="flex items-center gap-1"><span
+                                    class="material-symbols-outlined text-xs">check_circle</span> Shortlisted</span>
+                        </span>
+                    </td>
+                    <td
+                        class="px-4 py-6 bg-white dark:bg-slate-900 rounded-r-2xl border-y border-r border-slate-100 dark:border-slate-800 text-right">
+                        <button
+                            class="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            View Job
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- AWS Application -->
+                <tr
+                    class="group hover:bg-white/50 dark:hover:bg-white/5 transition-colors duration-200 rounded-2xl overflow-hidden">
+                    <td
+                        class="px-4 py-6 bg-white dark:bg-slate-900 rounded-l-2xl border-y border-l border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center p-2 border border-amber-100 dark:border-amber-800/50 group-hover:rotate-6 transition-transform">
+                                <span class="material-symbols-outlined text-amber-600 font-bold">package_2</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-white leading-none">Backend Intern</h4>
+                                <p class="text-sm text-slate-500 mt-1">AWS</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                        <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Sep 28, 2024</span>
+                    </td>
+                    <td class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                        <span
+                            class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
+                            Rejected
+                        </span>
+                    </td>
+                    <td
+                        class="px-4 py-6 bg-white dark:bg-slate-900 rounded-r-2xl border-y border-r border-slate-100 dark:border-slate-800 text-right">
+                        <button
+                            class="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            View Job
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

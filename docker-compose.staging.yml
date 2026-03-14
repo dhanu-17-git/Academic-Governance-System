@@ -1,0 +1,31 @@
+services:
+  web:
+    env_file:
+      - .env.staging
+    environment:
+      FLASK_ENV: staging
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env.staging}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env.staging}
+    ports:
+      - "5001:5000"
+
+  postgres:
+    env_file:
+      - .env.staging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-academic_staging}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.staging}
+      POSTGRES_DB: ${POSTGRES_DB:-academic_governance_staging}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_staging:/var/lib/postgresql/data
+
+  nginx:
+    profiles: ["proxy"]
+    ports:
+      - "8080:80"
+      - "8443:443"
+
+volumes:
+  pgdata_staging:

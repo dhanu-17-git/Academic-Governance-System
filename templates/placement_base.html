@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Placement Portal - Smart Academic Governance System{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block flash_messages %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+    <!-- Placement Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold flex items-center gap-3">
+                <span class="material-symbols-outlined text-indigo-600 text-4xl">work</span>
+                Placement Portal
+            </h1>
+            <p class="text-slate-500 mt-1">Track your readiness, apply for drives, and explore careers.</p>
+        </div>
+        <div
+            class="bg-indigo-50 border border-indigo-200 px-4 py-2 rounded-full flex items-center gap-2 text-indigo-600 font-bold text-sm shadow-sm">
+            <span class="material-symbols-outlined text-lg">campaign</span>
+            3 New Drives
+        </div>
+    </div>
+
+    <!-- Stitch Tab Navigation -->
+    <div class="flex gap-2 mb-8 overflow-x-auto pb-2">
+        <a href="{{ url_for('student.placement_profile') }}"
+            class="flex items-center gap-2 {% if active_page == 'profile' %}bg-indigo-600 text-white shadow-lg shadow-indigo-600/20{% else %}text-slate-500 hover:bg-white border border-transparent hover:border-slate-200{% endif %} px-6 py-2.5 rounded-full font-bold transition-all text-sm no-underline">
+            <span class="material-symbols-outlined text-lg">person</span> Profile
+        </a>
+        <a href="{{ url_for('student.placement_drives') }}"
+            class="flex items-center gap-2 {% if active_page == 'drives' %}bg-indigo-600 text-white shadow-lg shadow-indigo-600/20{% else %}text-slate-500 hover:bg-white border border-transparent hover:border-slate-200{% endif %} px-6 py-2.5 rounded-full font-bold transition-all text-sm no-underline">
+            <span class="material-symbols-outlined text-lg">rocket_launch</span> Drives
+        </a>
+        <a href="{{ url_for('student.placement_applications') }}"
+            class="flex items-center gap-2 {% if active_page == 'applications' %}bg-indigo-600 text-white shadow-lg shadow-indigo-600/20{% else %}text-slate-500 hover:bg-white border border-transparent hover:border-slate-200{% endif %} px-6 py-2.5 rounded-full font-bold transition-all text-sm no-underline">
+            <span class="material-symbols-outlined text-lg">description</span> Applications
+        </a>
+        <a href="{{ url_for('student.placement_career') }}"
+            class="flex items-center gap-2 {% if active_page == 'career' %}bg-indigo-600 text-white shadow-lg shadow-indigo-600/20{% else %}text-slate-500 hover:bg-white border border-transparent hover:border-slate-200{% endif %} px-6 py-2.5 rounded-full font-bold transition-all text-sm no-underline">
+            <span class="material-symbols-outlined text-lg">map</span> Career Paths
+        </a>
+    </div>
+
+    <!-- Page Specific Content -->
+    {% block placement_content %}{% endblock %}
+</div>
+
+<!-- Stitch Footer -->
+<footer class="mt-auto py-8 border-t border-slate-200">
+    <div
+        class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">security</span>
+            Anonymous &amp; Secure | Smart Academic Governance System
+        </div>
+        <div>© 2026 Developed &amp; Owned by Dhanush M</div>
+    </div>
+</footer>
+{% endblock %}

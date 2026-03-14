@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome | Smart Academic Governance System{% endblock %}
+
+{% block content %}
+<div class="landing-page">
+    <div class="hero-section py-5 text-center bg-light" style="min-height: 80vh; display: flex; align-items: center; background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);">
+        <div class="container">
+            <div class="brand-display mb-4">
+                <div class="brand-icon mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2.5rem; background: linear-gradient(135deg, #4f46e5, #3730a3); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="display-3 fw-bold text-dark mb-3">Academic<span class="text-primary">Gov</span></h1>
+                <p class="lead text-muted fs-4 mb-5 mx-auto" style="max-width: 700px;">
+                    A unified platform for campus governance, feedback management, and professional growth.
+                </p>
+            </div>
+            
+            <div class="cta-buttons d-flex justify-content-center gap-3">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-5 py-3 shadow" style="background: linear-gradient(135deg, #4f46e5, #3730a3); border: none; border-radius: 12px; font-weight: 700;">
+                    Get Started <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+            
+            <div class="features-preview mt-5 pt-5">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-top border-primary border-4" style="border-radius: 20px;">
+                            <i class="fas fa-shield-alt text-primary fs-3 mb-3"></i>
+                            <h5 class="fw-bold">Anonymous Voting</h5>
+                            <p class="small text-muted mb-0">Speak your mind without fear through our encrypted governance system.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-top border-success border-4" style="border-radius: 20px;">
+                            <i class="fas fa-chart-bar text-success fs-3 mb-3"></i>
+                            <h5 class="fw-bold">Academic Analytics</h5>
+                            <p class="small text-muted mb-0">Track your attendance and performance with real-time insights.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-4 bg-white rounded-4 shadow-sm h-100 border-top border-warning border-4" style="border-radius: 20px;">
+                            <i class="fas fa-briefcase text-warning fs-3 mb-3"></i>
+                            <h5 class="fw-bold">Placement Portal</h5>
+                            <p class="small text-muted mb-0">Bridge the gap between your education and your dream career.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

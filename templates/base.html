@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Academic Governance System{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Tailwind CSS (for Chatbot) with preflight disabled to protect Bootstrap -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: {
+                preflight: false,
+            }
+        }
+    </script>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% block navbar %}
+    <!-- Navigation -->
+    {% if session.user_email %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-white  sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('student.dashboard') }}">
+                <div class="brand-icon me-2">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <span class="brand-text">Academic<span class="brand-highlight">Gov</span></span>
+            </a>
+
+            <!-- Hamburger button (visible on mobile only) -->
+            <button id="sidebarToggle" class="navbar-toggler d-lg-none" type="button">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Search Bar (Centered) -->
+            <div class="d-none d-lg-flex flex-grow-1 justify-content-center px-4">
+                <div class="position-relative w-100" style="max-width: 400px;">
+                    <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" class="form-control rounded-pill ps-5 border-0 bg-light py-2"
+                        placeholder="Search data..."
+                        style="box-shadow: none; font-size: 0.9rem; transition: all 0.3s ease;">
+                </div>
+            </div>
+
+            <!-- Desktop Navbar -->
+            <div class="d-none d-lg-flex" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.dashboard') }}">
+                            <i class="fas fa-home me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <!-- Gemini Task: Student Progress -->
+                    {% if session.get('role') == 'student' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.student_progress') }}">
+                            <i class="fas fa-chart-line me-1"></i> Progress
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.raise_complaint') }}">
+                            <i class="fas fa-exclamation-circle me-1"></i> Raise Complaint
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.track_complaint') }}">
+                            <i class="fas fa-search me-1"></i> Track
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.academic_feedback') }}">
+                            <i class="fas fa-star me-1"></i> Feedback
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.placement_index') }}">
+                            <i class="fas fa-briefcase me-1"></i> Placement
+                        </a>
+                    </li>
+                    <!-- Codex Tasks: Timetable & Lab Status -->
+                    {% if session.get('role') == 'student' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('student.lab_index') }}">
+                            <i class="fas fa-desktop me-1"></i> Labs
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <!-- Gemini Task: Notification Bell -->
+                    <li class="nav-item dropdown ms-lg-2 me-lg-1 d-flex align-items-center">
+                        <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <i class="fas fa-bell fs-6"></i>
+                            {% if notifications and notifications|length > 0 %}
+                            <span
+                                class="position-absolute top-25 start-75 translate-middle badge rounded-pill bg-danger"
+                                style="font-size: 0.55rem;">
+                                {{ notifications|length }}
+                            </span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0"
+                            style="width: 310px; max-height: 380px; overflow-y: auto;">
+                            <li>
+                                <h6 class="dropdown-header fw-bold text-dark border-bottom pb-2 mb-1"><i
+                                        class="fas fa-bell me-2 text-primary"></i>Notifications</h6>
+                            </li>
+                            {% if notifications and notifications|length > 0 %}
+                            {% for note in notifications[:5] %}
+                            <li>
+                                <a class="dropdown-item text-wrap py-2 border-bottom small"
+                                href="{{ note.link | default('#') }}" target="_blank" rel="noopener noreferrer">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <strong class="text-primary" style="font-size: 0.82rem;">{{ note.title
+                                            }}</strong>
+                                        {% if note.timestamp %}<small class="text-muted ms-2 flex-shrink-0">{{
+                                            note.timestamp }}</small>{% endif %}
+                                    </div>
+                                    <p class="mb-0 text-muted mt-1" style="font-size: 0.78rem;">{{ note.message }}</p>
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li><a class="dropdown-item text-center text-primary small py-2" href="#">View all</a></li>
+                            {% else %}
+                            <li><span class="dropdown-item text-muted text-center py-3 small">No new
+                                    notifications</span></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown ms-lg-2">
+                        <a class="nav-link dropdown-toggle user-dropdown" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="d-none d-lg-inline ms-2">{{ session.user_email.split('@')[0] }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% if session.get('role') == 'admin' %}
+                            <li><a class="dropdown-item" href="{{ url_for('admin.admin_dashboard') }}">
+                                    <i class="fas fa-cog me-2"></i> Admin Panel
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            {% endif %}
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dark overlay -->
+    <div id="sidebarOverlay" class="d-none position-fixed w-100 h-100"
+        style="top:0;left:0;background:rgba(0,0,0,0.5);z-index:999;"></div>
+
+    <!-- Slide-in panel -->
+    <div id="sidebar" class="position-fixed h-100 bg-white shadow"
+        style="top:0;left:-280px;width:280px;z-index:1000;transition:left 0.3s ease;overflow-y:auto;padding-top:20px;">
+        <div class="px-3 pb-3 border-bottom d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-primary"><i class="fas fa-graduation-cap me-2"></i>AcademicGov</span>
+            <button id="sidebarCloseBtn" class="btn text-muted p-0"><i class="fas fa-times fs-5"></i></button>
+        </div>
+
+        <ul class="nav flex-column mt-3 px-2">
+            <li class="nav-item mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('student.dashboard') }}">
+                    <i class="fas fa-home me-2 text-primary" style="width:20px"></i> Dashboard
+                </a>
+            </li>
+            {% if session.get('role') == 'student' %}
+            <li class="nav-item mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('student.student_progress') }}">
+                    <i class="fas fa-chart-line me-2 text-primary" style="width:20px"></i> Progress
+                </a>
+            </li>
+            {% endif %}
+            <li class="nav-item mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('student.raise_complaint') }}">
+                    <i class="fas fa-exclamation-circle me-2 text-primary" style="width:20px"></i> Raise Complaint
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('student.track_complaint') }}">
+                    <i class="fas fa-search me-2 text-primary" style="width:20px"></i> Track
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('student.academic_feedback') }}">
+                    <i class="fas fa-star me-2 text-primary" style="width:20px"></i> Feedback
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('student.placement_index') }}">
+                    <i class="fas fa-briefcase me-2 text-primary" style="width:20px"></i> Placement
+                </a>
+            </li>
+            {% if session.get('role') == 'student' %}
+            <li class="nav-item mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('student.lab_index') }}">
+                    <i class="fas fa-desktop me-2 text-primary" style="width:20px"></i> Labs
+                </a>
+            </li>
+            {% endif %}
+            <li class="nav-item mt-3 mb-2 px-3">
+                <div class="text-uppercase text-muted" style="font-size:0.75rem; letter-spacing:1px;">Account</div>
+            </li>
+            <li class="nav-item mb-1 px-3 py-2 text-muted fw-medium border-bottom">
+                <i class="fas fa-user-circle me-2 fs-5 align-middle"></i>
+                <span class="align-middle">{{ session.user_email.split('@')[0] }}</span>
+            </li>
+            {% if session.get('role') == 'admin' %}
+            <li class="nav-item mt-2 mb-1">
+                <a class="nav-link text-dark rounded" href="{{ url_for('admin.admin_dashboard') }}">
+                    <i class="fas fa-cog me-2 text-primary" style="width:20px"></i> Admin Panel
+                </a>
+            </li>
+            {% endif %}
+            <li class="nav-item mb-1">
+                <a class="nav-link text-danger rounded" href="{{ url_for('auth.logout') }}">
+                    <i class="fas fa-sign-out-alt me-2" style="width:20px"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    {% block flash_messages %}
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show "
+            role="alert">
+            <i
+                class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' if category == 'info' else 'times-circle' }} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+    {% endblock %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+    <!-- Footer -->
+    <footer class="footer mt-auto py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Anonymous & Secure | Smart Academic Governance System
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0 text-muted">
+                        <small>&copy; 2026 Developed & Owned by Dhanush M</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- Mobile Sidebar Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (sidebarToggle && sidebar && overlay) {
+                const openSidebar = () => {
+                    sidebar.style.left = '0';
+                    overlay.classList.remove('d-none');
+                };
+
+                const closeSidebar = () => {
+                    sidebar.style.left = '-280px';
+                    overlay.classList.add('d-none');
+                };
+
+                sidebarToggle.onclick = openSidebar;
+                overlay.onclick = closeSidebar;
+                if (sidebarCloseBtn) sidebarCloseBtn.onclick = closeSidebar;
+            }
+        });
+    </script>
+
+    <!-- ARIA Chatbot Widget -->
+    {% include 'chatbot_widget.html' %}
+</body>
+
+</html>

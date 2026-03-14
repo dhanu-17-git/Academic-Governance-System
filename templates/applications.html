@@ -1,0 +1,170 @@
+{% extends "layouts/student_base.html" %}
+{% block title %}Applications | Placement Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-extrabold flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-4xl">work</span>
+                Placement Portal
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">Track your readiness, apply for drives, and explore
+                careers.</p>
+        </div>
+        <div
+            class="bg-indigo-50 dark:bg-primary/10 border border-primary/20 px-4 py-2 rounded-full flex items-center gap-2 text-primary font-bold text-sm shadow-sm">
+            <span class="material-symbols-outlined text-lg">campaign</span>
+            3 New Drives
+        </div>
+    </div>
+    <div class="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-2">
+        <a href="{{ url_for('student.placement_profile') }}"
+            class="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-6 py-2.5 rounded-full font-bold hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+            <span class="material-symbols-outlined text-lg text-slate-400">person</span> Profile
+        </a>
+        <a href="{{ url_for('student.drives') }}"
+            class="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-6 py-2.5 rounded-full font-bold hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+            <span class="material-symbols-outlined text-lg text-slate-400">rocket_launch</span> Drives
+        </a>
+        <a href="{{ url_for('student.applications') }}"
+            class="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full font-bold shadow-lg shadow-primary/20 transition-transform active:scale-95">
+            <span class="material-symbols-outlined text-lg">description</span> Applications
+        </a>
+        <a href="{{ url_for('student.career_paths') }}"
+            class="flex items-center gap-2 text-slate-500 dark:text-slate-400 px-6 py-2.5 rounded-full font-bold hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+            <span class="material-symbols-outlined text-lg text-slate-400">map</span> Career Paths
+        </a>
+    </div>
+    <div class="glass p-8 rounded-3xl shadow-sm border border-white/40">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">My Applications</h2>
+            <div
+                class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">
+                <span class="material-symbols-outlined text-base">list_alt</span>
+                3 Total
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-separate border-spacing-y-4">
+                <thead>
+                    <tr class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        <th class="px-4 py-2">Company &amp; Role</th>
+                        <th class="px-4 py-2">Applied Date</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="space-y-4">
+                    <tr
+                        class="group hover:bg-white/50 dark:hover:bg-white/5 transition-colors duration-200 rounded-2xl overflow-hidden">
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 rounded-l-2xl border-y border-l border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-2 border border-slate-100 dark:border-slate-700">
+                                    <img alt="Microsoft" class="w-full h-full object-contain"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJbnZUbbgayDnUhbNEIbfYTDLrE-nBsD2_FBIF-r1ad_aBLsZ7Z6G8Szj-gLrcnlL-XYec2nk4awJecT3b23YC63k9plpvWv7onDcv-54YuR-bgbG-OoLoYq0myePO7PECQ4fhbFymKY3IyOfXj2bVGyP9IZjaTcjqYS79akI4xNKkmNvFdboIyEmGmxMqiHjKSmBm9I03S_PHCf3BuFM5BBUnP5mciCUZDVBQrO9O8YNrPQguG_N1nbUGQXPnDxKdAjB0bPnD66JR" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-white leading-none">Cloud Engineer
+                                    </h4>
+                                    <p class="text-sm text-slate-500 mt-1">Microsoft</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Oct 12, 2024</span>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                            <span
+                                class="px-3 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30">
+                                Under Review
+                            </span>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 rounded-r-2xl border-y border-r border-slate-100 dark:border-slate-800 text-right">
+                            <button
+                                class="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                View Job
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="group hover:bg-white/50 dark:hover:bg-white/5 transition-colors duration-200">
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 rounded-l-2xl border-y border-l border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-2 border border-slate-100 dark:border-slate-700">
+                                    <img alt="Google" class="w-full h-full object-contain"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVAcEgTLv3bPf5Pxl0iPmXGrpXwx4CvZRzlGI2--9t-Pc3gy-mSK3IDX_N8-lbTjVOS3ufJ4uuiQBTUnPv08IWlL_gLXIN5g2-Skwd42awXrBzvhj-5WVsvMHDk-pqCAS414CHhNuphHle3dBPSzWFhnFRSvu-4UlaI1p2g0gIHglXWD8bl89xJm_hRSxyAhHIMF4PWObr-rQWhCZNjOmhiJhDQeJyhT0nCEzQ3APxR4pK63yElzewxNhpHfWaXSGXNeSHPaXBOrDy" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-white leading-none">Data Analyst</h4>
+                                    <p class="text-sm text-slate-500 mt-1">Google</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Oct 05, 2024</span>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                            <span
+                                class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30">
+                                <span class="flex items-center gap-1"><span
+                                        class="material-symbols-outlined text-xs">check_circle</span> Shortlisted</span>
+                            </span>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 rounded-r-2xl border-y border-r border-slate-100 dark:border-slate-800 text-right">
+                            <button
+                                class="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                View Job
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="group hover:bg-white/50 dark:hover:bg-white/5 transition-colors duration-200">
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 rounded-l-2xl border-y border-l border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-2 border border-slate-100 dark:border-slate-700">
+                                    <img alt="AWS" class="w-full h-full object-contain"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSTJj85mu05AEpIbDOA2BunQ4TpHGreGFc8Tww8C0J9KQV90NJspuPgMDPNCwXazw49L9KOYHFvFj-0uWAn33ngZrr4BK1bzaQGBYBEekknb2VRv_wDMuQYc6x3DFQoEXX0v3AiqwJRyZ-unz05yjAim1I9es33MtDV2b44vRYOVf7kKX1VXT-Zck0c-ZoYfXeiocsT-Be37Dj39vuQGNDyab02ABm5y12mjTHGkPdEBBpwYvgSl45zmu6HDzk_-jcGvJkrA5S8xD_" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 dark:text-white leading-none">Backend Intern
+                                    </h4>
+                                    <p class="text-sm text-slate-500 mt-1">AWS</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                            <span class="text-sm font-medium text-slate-600 dark:text-slate-400">Sep 28, 2024</span>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+                            <span
+                                class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700">
+                                Rejected
+                            </span>
+                        </td>
+                        <td
+                            class="px-4 py-6 bg-white dark:bg-slate-900 rounded-r-2xl border-y border-r border-slate-100 dark:border-slate-800 text-right">
+                            <button
+                                class="px-5 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                View Job
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
