@@ -1,6 +1,6 @@
 # Academic Governance System
 
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/dhanu-17-git/Academic-Governance-System/ci.yml?label=CI%2FCD)](https://github.com/dhanu-17-git/Academic-Governance-System/actions/workflows/ci.yml)
+[![CI](https://github.com/dhanu-17-git/Academic-Governance-System/actions/workflows/ci.yml/badge.svg)](https://github.com/dhanu-17-git/Academic-Governance-System/actions/workflows/ci.yml)
 ![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=flat&logo=flask&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=flat&logo=postgresql&logoColor=white)
