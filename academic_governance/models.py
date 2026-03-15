@@ -6,7 +6,9 @@ from academic_governance.db import db
 
 
 class TimestampMixin:
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class Complaint(db.Model):
@@ -19,7 +21,9 @@ class Complaint(db.Model):
     url = db.Column(db.Text)
     status = db.Column(db.String(32), nullable=False, server_default="Submitted")
     admin_response = db.Column(db.Text)
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
     updated_at = db.Column(
         db.DateTime(timezone=True),
         server_default=db.func.now(),
@@ -31,7 +35,9 @@ class ComplaintOwnership(db.Model):
     __tablename__ = "complaint_ownership"
 
     id = db.Column(db.Integer, primary_key=True)
-    complaint_id = db.Column(db.String(32), db.ForeignKey("complaints.id"), nullable=False)
+    complaint_id = db.Column(
+        db.String(32), db.ForeignKey("complaints.id"), nullable=False
+    )
     student_email = db.Column(db.String(255), nullable=False, index=True)
 
 
@@ -42,7 +48,9 @@ class OtpCode(db.Model):
     otp = db.Column(db.String(16), nullable=False)
     expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
     attempts = db.Column(db.Integer, nullable=False, server_default="0")
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class RateLimitEvent(db.Model):
@@ -54,7 +62,9 @@ class RateLimitEvent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     action = db.Column(db.String(64), nullable=False)
     identifier = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, server_default=db.func.now())
+    created_at = db.Column(
+        db.DateTime(timezone=True), nullable=False, server_default=db.func.now()
+    )
 
 
 class Feedback(db.Model):
@@ -65,7 +75,9 @@ class Feedback(db.Model):
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
     sentiment = db.Column(db.String(32), nullable=False, server_default="Neutral")
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class CampusUpdate(db.Model):
@@ -75,7 +87,9 @@ class CampusUpdate(db.Model):
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(120))
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class AuditLog(db.Model):
@@ -84,7 +98,9 @@ class AuditLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     admin_email = db.Column(db.String(255), nullable=False)
     action = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    timestamp = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class Subject(db.Model):
@@ -111,7 +127,9 @@ class Attendance(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey("subjects.id"), nullable=False)
     total_classes = db.Column(db.Integer, nullable=False, server_default="0")
     attended_classes = db.Column(db.Integer, nullable=False, server_default="0")
-    last_updated = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    last_updated = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class Mark(db.Model):
@@ -123,7 +141,9 @@ class Mark(db.Model):
     internal_marks = db.Column(db.Integer, nullable=False, server_default="0")
     assignment_marks = db.Column(db.Integer, nullable=False, server_default="0")
     exam_marks = db.Column(db.Integer, nullable=False, server_default="0")
-    last_updated = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    last_updated = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class Note(db.Model):
@@ -134,7 +154,9 @@ class Note(db.Model):
     title = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.Text, nullable=False, unique=True)
     uploaded_by = db.Column(db.String(255), nullable=False)
-    uploaded_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    uploaded_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class TimetableSlot(db.Model):
@@ -155,7 +177,9 @@ class Notification(db.Model):
     title = db.Column(db.String(255), nullable=False)
     message = db.Column(db.Text, nullable=False)
     link = db.Column(db.Text, nullable=False, server_default="")
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class User(db.Model):
@@ -164,7 +188,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
     role = db.Column(db.String(32), nullable=False, server_default="student")
-    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )
 
 
 class Lab(db.Model):
@@ -187,4 +213,6 @@ class LabSystem(db.Model):
     seat_number = db.Column(db.Integer, nullable=False)
     system_code = db.Column(db.String(64), nullable=False)
     status = db.Column(db.String(32), nullable=False, server_default="working")
-    last_updated = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
+    last_updated = db.Column(
+        db.DateTime(timezone=True), server_default=db.func.now(), nullable=False
+    )

@@ -8,7 +8,6 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from academic_governance import config
 from academic_governance.repositories import user_repository
 from academic_governance.services import academic_service
 
@@ -16,7 +15,9 @@ from academic_governance.services import academic_service
 class TestAcademicService:
     def test_dashboard_context_seeds_student_academic_data(self, app):
         with app.app_context():
-            context = academic_service.get_student_dashboard_context("student@college.edu")
+            context = academic_service.get_student_dashboard_context(
+                "student@college.edu"
+            )
 
         assert context["has_academic_data"] is True
         assert context["attendance_records"]
@@ -66,7 +67,9 @@ class TestAcademicService:
         csv_bytes = io.BytesIO(
             b"email,role\nstudent1@college.edu,student\nadmin1@college.edu,admin\ninvalid-email,student\n"
         )
-        file_storage = FileStorage(stream=csv_bytes, filename="users.csv", content_type="text/csv")
+        file_storage = FileStorage(
+            stream=csv_bytes, filename="users.csv", content_type="text/csv"
+        )
 
         with app.app_context():
             result = academic_service.bulk_create_users_from_csv(file_storage)

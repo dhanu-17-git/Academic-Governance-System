@@ -71,9 +71,13 @@ class TestComplaintService:
         assert updated["admin_response"] == "Issue fixed."
         assert stats == {"total": 1, "pending": 0, "resolved": 1}
 
-    def test_update_complaint_status_sends_email_when_configured(self, app, monkeypatch):
+    def test_update_complaint_status_sends_email_when_configured(
+        self, app, monkeypatch
+    ):
         delivered = {}
-        monkeypatch.setattr(complaint_service.email_service, "is_email_configured", lambda: True)
+        monkeypatch.setattr(
+            complaint_service.email_service, "is_email_configured", lambda: True
+        )
 
         def fake_send(recipient, complaint_id, status, *, admin_response=""):
             delivered["recipient"] = recipient
@@ -107,7 +111,9 @@ class TestComplaintService:
             "admin_response": "We have escalated this to the team.",
         }
 
-    def test_create_complaint_with_upload_moves_file_into_complaint_folder(self, app, monkeypatch):
+    def test_create_complaint_with_upload_moves_file_into_complaint_folder(
+        self, app, monkeypatch
+    ):
         with managed_temp_dir("complaint_upload_") as upload_root:
             _set_upload_folder(monkeypatch, upload_root)
             file_storage = FileStorage(

@@ -12,7 +12,11 @@ if ROOT_DIR not in sys.path:
 from academic_governance import create_app
 from academic_governance.db import db
 from academic_governance.models import CampusUpdate, Lab, LabSystem
-from academic_governance.services import academic_service, complaint_service, notification_service
+from academic_governance.services import (
+    academic_service,
+    complaint_service,
+    notification_service,
+)
 
 
 def _seed_campus_updates() -> None:
@@ -87,7 +91,7 @@ def seed() -> None:
             ),
             student_email="student@college.edu",
         )
-        complaint_two = complaint_service.create_complaint(
+        complaint_service.create_complaint(
             category="Infrastructure",
             description="The air conditioning in the main auditorium is not working.",
             student_email="student@college.edu",

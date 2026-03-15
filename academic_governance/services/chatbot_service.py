@@ -95,18 +95,18 @@ STUDENT PROFILE
 ========================================
 ATTENDANCE STATUS
 ========================================
-{chr(10).join(attendance_lines) if attendance_lines else '  No attendance data found.'}
+{chr(10).join(attendance_lines) if attendance_lines else "  No attendance data found."}
 
 Subjects below 75% attendance:
-{chr(10).join(f'  - {subject}' for subject in low_attendance_subjects) if low_attendance_subjects else '  None - all subjects are safe.'}
+{chr(10).join(f"  - {subject}" for subject in low_attendance_subjects) if low_attendance_subjects else "  None - all subjects are safe."}
 
 ========================================
 MARKS AND PERFORMANCE
 ========================================
-{chr(10).join(marks_lines) if marks_lines else '  No marks data found.'}
+{chr(10).join(marks_lines) if marks_lines else "  No marks data found."}
 
 Weak subjects (below 50% internal):
-{chr(10).join(f'  - {subject}' for subject in weak_subjects) if weak_subjects else '  None - performance looks good.'}
+{chr(10).join(f"  - {subject}" for subject in weak_subjects) if weak_subjects else "  None - performance looks good."}
 
 ========================================
 RECENT GRIEVANCES
@@ -118,7 +118,9 @@ RECENT GRIEVANCES
 def ask_gemini(context: str, user_message: str) -> str:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        return "Chatbot is not configured. Please add GEMINI_API_KEY to your environment."
+        return (
+            "Chatbot is not configured. Please add GEMINI_API_KEY to your environment."
+        )
 
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"

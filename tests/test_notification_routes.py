@@ -11,7 +11,9 @@ from tests.helpers import extract_csrf_token, login_as
 
 
 class TestNotificationRoutes:
-    def test_student_notifications_page_shows_existing_notifications(self, app_with_client):
+    def test_student_notifications_page_shows_existing_notifications(
+        self, app_with_client
+    ):
         app, client = app_with_client
 
         with app.app_context():

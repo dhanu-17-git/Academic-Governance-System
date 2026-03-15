@@ -23,7 +23,9 @@ from academic_governance.db import db
 def _base_database_uri() -> str:
     uri = config.SQLALCHEMY_DATABASE_URI
     if not uri.startswith("postgresql"):
-        raise RuntimeError("PostgreSQL tests require a PostgreSQL SQLALCHEMY_DATABASE_URI.")
+        raise RuntimeError(
+            "PostgreSQL tests require a PostgreSQL SQLALCHEMY_DATABASE_URI."
+        )
     return uri
 
 
@@ -38,7 +40,9 @@ def _temporary_postgres_schema():
         with admin_engine.begin() as connection:
             connection.execute(text(f'CREATE SCHEMA "{schema_name}"'))
 
-        test_url = base_url.update_query_dict({"options": f"-csearch_path={schema_name}"})
+        test_url = base_url.update_query_dict(
+            {"options": f"-csearch_path={schema_name}"}
+        )
         config.SQLALCHEMY_DATABASE_URI = test_url.render_as_string(hide_password=False)
         yield
     finally:
@@ -48,7 +52,9 @@ def _temporary_postgres_schema():
         cleanup_engine = create_engine(base_url)
         try:
             with cleanup_engine.begin() as connection:
-                connection.execute(text(f'DROP SCHEMA IF EXISTS "{schema_name}" CASCADE'))
+                connection.execute(
+                    text(f'DROP SCHEMA IF EXISTS "{schema_name}" CASCADE')
+                )
         finally:
             cleanup_engine.dispose()
 

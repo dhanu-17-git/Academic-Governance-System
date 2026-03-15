@@ -15,7 +15,8 @@ def _now() -> datetime:
 
 
 def store_otp(email: str, otp: str, expires_at: str) -> None:
-    parsed_expires_at = datetime.strptime(expires_at, "%Y-%m-%d %H:%M:%S").astimezone()
+    from datetime import timezone
+    parsed_expires_at = datetime.strptime(expires_at, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
     existing = db.session.get(OtpCode, email)
     if existing is None:
         db.session.add(
@@ -35,13 +36,20 @@ def store_otp(email: str, otp: str, expires_at: str) -> None:
 
 
 def get_otp_record(email: str):
+    from datetime import timezone
     record = db.session.get(OtpCode, email)
     if record is None:
         return None
+    
+    # Ensure expires_at treats the DB datetime as UTC
+    exp_at = record.expires_at
+    if exp_at.tzinfo is None:
+        exp_at = exp_at.replace(tzinfo=timezone.utc)
+        
     return {
         "email": record.email,
         "otp": record.otp,
-        "expires_at": record.expires_at.astimezone().strftime("%Y-%m-%d %H:%M:%S"),
+        "expires_at": exp_at.strftime("%Y-%m-%d %H:%M:%S"),
         "attempts": record.attempts,
     }
 
@@ -119,7 +127,9 @@ def get_user(email: str) -> User | None:
 
 
 def get_or_create_google_user(email: str) -> tuple[User, bool]:
-    return user_repository.get_or_create_user(email, config.ROLE_STUDENT, created_at=_now())
+    return user_repository.get_or_create_user(
+        email, config.ROLE_STUDENT, created_at=_now()
+    )
 
 
 def resolve_login_role(

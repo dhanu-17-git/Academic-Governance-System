@@ -12,6 +12,9 @@
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind_compiled.css') }}">
 
 </head>
@@ -63,6 +66,18 @@
                     </div>
                 </div>
 
+                <div class="space-y-2">
+                    <label for="password"
+                        class="block text-xs font-bold text-slate-700 uppercase tracking-widest pl-1">Password</label>
+                    <div class="relative group">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors duration-300 z-10">lock</span>
+                        <input type="password" id="password" name="password" placeholder="••••••••"
+                            class="w-full bg-white/50 border border-slate-200/80 rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/40 transition-all font-medium backdrop-blur-sm text-slate-800 placeholder:text-slate-400 outline-none relative z-0"
+                            required>
+                    </div>
+                </div>
+
                 <div class="pt-2">
                     <button type="submit"
                         class="w-full bg-indigo-600 text-white rounded-2xl py-4 font-bold text-sm shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:bg-indigo-500 transition-all hover:-translate-y-0.5 active:translate-y-0.5 flex items-center justify-center gap-2 group"
@@ -82,7 +97,6 @@
                 </div>
             </form>
 
-            {% if google_oauth_enabled %}
             <div class="mt-6 mb-2 flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
                 <span class="h-px flex-1 bg-slate-200/80"></span>
                 <span>Or Continue With</span>
@@ -103,7 +117,6 @@
                 </svg>
                 <span>Continue with Google</span>
             </a>
-            {% endif %}
 
             <div class="mt-8 pt-8 border-t border-slate-200/60 text-center">
                 <div
@@ -129,7 +142,7 @@
             const spinner = document.getElementById('spinner');
             const btn = document.getElementById('loginBtn');
 
-            btnText.textContent = 'Sending verification code...';
+            btnText.textContent = 'Verifying credentials...';
             btnIcon.classList.add('hidden');
             spinner.classList.remove('hidden');
             btn.classList.add('opacity-90', 'cursor-not-allowed', 'pointer-events-none');

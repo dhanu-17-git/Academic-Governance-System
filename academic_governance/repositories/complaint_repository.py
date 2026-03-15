@@ -5,7 +5,13 @@ from __future__ import annotations
 from datetime import datetime
 
 from academic_governance.db import db
-from academic_governance.models import AuditLog, CampusUpdate, Complaint, ComplaintOwnership, Feedback
+from academic_governance.models import (
+    AuditLog,
+    CampusUpdate,
+    Complaint,
+    ComplaintOwnership,
+    Feedback,
+)
 
 
 def create_complaint(
@@ -50,7 +56,9 @@ def count_student_complaints(student_email: str) -> int:
     )
 
 
-def count_student_complaints_by_statuses(student_email: str, statuses: tuple[str, ...]) -> int:
+def count_student_complaints_by_statuses(
+    student_email: str, statuses: tuple[str, ...]
+) -> int:
     return (
         db.session.query(Complaint)
         .join(ComplaintOwnership, Complaint.id == ComplaintOwnership.complaint_id)
@@ -131,10 +139,17 @@ def count_complaints_by_category(category: str) -> int:
 
 
 def list_recent_complaints(limit: int = 10) -> list[Complaint]:
-    return db.session.query(Complaint).order_by(Complaint.created_at.desc()).limit(limit).all()
+    return (
+        db.session.query(Complaint)
+        .order_by(Complaint.created_at.desc())
+        .limit(limit)
+        .all()
+    )
 
 
-def create_feedback(subject: str, rating: int, comment: str, sentiment: str) -> Feedback:
+def create_feedback(
+    subject: str, rating: int, comment: str, sentiment: str
+) -> Feedback:
     feedback = Feedback(
         subject=subject,
         rating=rating,
@@ -159,7 +174,12 @@ def get_sentiment_distribution_rows():
 
 
 def list_campus_updates(limit: int = 5) -> list[CampusUpdate]:
-    return db.session.query(CampusUpdate).order_by(CampusUpdate.created_at.desc()).limit(limit).all()
+    return (
+        db.session.query(CampusUpdate)
+        .order_by(CampusUpdate.created_at.desc())
+        .limit(limit)
+        .all()
+    )
 
 
 def list_student_grievances(student_email: str, limit: int = 5):

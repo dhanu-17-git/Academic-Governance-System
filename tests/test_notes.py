@@ -23,13 +23,19 @@ def main() -> None:
             file_path="notes/test.pdf",
             admin_email="admin@test.com",
         )
-        assert isinstance(note_id, int) and note_id > 0, f"Unexpected note_id: {note_id}"
+        assert isinstance(note_id, int) and note_id > 0, (
+            f"Unexpected note_id: {note_id}"
+        )
 
         notes = academic_service.get_notes_for_subject(subject.id)
-        assert any(int(note["id"]) == note_id for note in notes), "Inserted note not found in subject notes."
+        assert any(int(note["id"]) == note_id for note in notes), (
+            "Inserted note not found in subject notes."
+        )
 
         deleted_file_path = academic_service.delete_note(note_id)
-        assert deleted_file_path == "notes/test.pdf", f"Unexpected deleted file path: {deleted_file_path}"
+        assert deleted_file_path == "notes/test.pdf", (
+            f"Unexpected deleted file path: {deleted_file_path}"
+        )
 
     print("test_notes.py: PASS")
 

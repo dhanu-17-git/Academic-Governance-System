@@ -121,7 +121,10 @@ def _ensure_default_timetable(subjects: list[Subject]) -> None:
 
 def get_student_attendance(student_email: str) -> list[dict]:
     rows = academic_repository.list_student_attendance_rows(student_email)
-    return [_attendance_dict(attendance, subject_name, credits) for attendance, subject_name, credits in rows]
+    return [
+        _attendance_dict(attendance, subject_name, credits)
+        for attendance, subject_name, credits in rows
+    ]
 
 
 def get_student_marks(student_email: str) -> list[dict]:
@@ -145,20 +148,19 @@ def seed_student_academic_data(student_email: str) -> None:
                 student_email=student_email,
                 subject_id=subject.id,
                 total_classes=40,
-                attended_classes=random.randint(25, 40),
+                attended_classes=random.randint(25, 40),  # nosec B311
                 last_updated=_now(),
             )
             academic_repository.add_mark_record(
                 student_email=student_email,
                 subject_id=subject.id,
-                internal_marks=random.randint(15, 30),
-                assignment_marks=random.randint(10, 20),
-                exam_marks=random.randint(30, 50),
+                internal_marks=random.randint(15, 30),  # nosec B311
+                assignment_marks=random.randint(10, 20),  # nosec B311
+                exam_marks=random.randint(30, 50),  # nosec B311
                 last_updated=_now(),
             )
 
     academic_repository.commit()
-
 
 
 def get_student_dashboard_context(student_email: str) -> dict:
@@ -168,19 +170,27 @@ def get_student_dashboard_context(student_email: str) -> dict:
 
     total_attended = sum(record["attended_classes"] for record in attendance_records)
     total_classes = sum(record["total_classes"] for record in attendance_records)
-    overall_attendance_pct = round((total_attended / total_classes) * 100, 2) if total_classes else 0.0
+    overall_attendance_pct = (
+        round((total_attended / total_classes) * 100, 2) if total_classes else 0.0
+    )
 
     total_marks_across_subjects = 0
     top_subject_name = "N/A"
     highest_marks = -1
     for record in marks_records:
-        subject_total = record["internal_marks"] + record["assignment_marks"] + record["exam_marks"]
+        subject_total = (
+            record["internal_marks"] + record["assignment_marks"] + record["exam_marks"]
+        )
         total_marks_across_subjects += subject_total
         if subject_total > highest_marks:
             highest_marks = subject_total
             top_subject_name = record["subject_name"]
 
-    avg_marks_pct = round(total_marks_across_subjects / len(marks_records), 2) if marks_records else 0.0
+    avg_marks_pct = (
+        round(total_marks_across_subjects / len(marks_records), 2)
+        if marks_records
+        else 0.0
+    )
     subjects_below_75 = sum(
         1
         for record in attendance_records
@@ -206,9 +216,13 @@ def get_student_progress_context(student_email: str) -> dict:
 
     total_attended = sum(record["attended_classes"] for record in attendance_records)
     total_classes = sum(record["total_classes"] for record in attendance_records)
-    overall_attendance_pct = round((total_attended / total_classes) * 100, 2) if total_classes else 0.0
+    overall_attendance_pct = (
+        round((total_attended / total_classes) * 100, 2) if total_classes else 0.0
+    )
 
-    attendance_by_subject = {record["subject_id"]: record for record in attendance_records}
+    attendance_by_subject = {
+        record["subject_id"]: record for record in attendance_records
+    }
     progress_data = []
     top_subject = {"name": "N/A", "marks": -1}
     weakest_subject = {"name": "N/A", "marks": 999}
@@ -217,9 +231,13 @@ def get_student_progress_context(student_email: str) -> dict:
         attendance = attendance_by_subject.get(record["subject_id"])
         attendance_pct = 0.0
         if attendance and attendance["total_classes"] > 0:
-            attendance_pct = round((attendance["attended_classes"] / attendance["total_classes"]) * 100, 1)
+            attendance_pct = round(
+                (attendance["attended_classes"] / attendance["total_classes"]) * 100, 1
+            )
 
-        total_marks = record["internal_marks"] + record["assignment_marks"] + record["exam_marks"]
+        total_marks = (
+            record["internal_marks"] + record["assignment_marks"] + record["exam_marks"]
+        )
         if total_marks > top_subject["marks"]:
             top_subject = {"name": record["subject_name"], "marks": total_marks}
         if total_marks < weakest_subject["marks"]:
@@ -252,11 +270,18 @@ def get_attendance_overview_context(student_email: str) -> dict:
     records = get_student_attendance(student_email)
     total_classes = sum(record["total_classes"] for record in records)
     attended_classes = sum(record["attended_classes"] for record in records)
-    overall_pct = round((attended_classes / total_classes) * 100, 1) if total_classes else 0
+    overall_pct = (
+        round((attended_classes / total_classes) * 100, 1) if total_classes else 0
+    )
 
-    labels = [f"BCS-{record['subject_id']}0{index + 1}: {record['subject_name']}" for index, record in enumerate(records)]
+    labels = [
+        f"BCS-{record['subject_id']}0{index + 1}: {record['subject_name']}"
+        for index, record in enumerate(records)
+    ]
     percentages = [
-        round((record["attended_classes"] / record["total_classes"]) * 100, 1) if record["total_classes"] else 0
+        round((record["attended_classes"] / record["total_classes"]) * 100, 1)
+        if record["total_classes"]
+        else 0
         for record in records
     ]
 
@@ -270,7 +295,11 @@ def get_attendance_overview_context(student_email: str) -> dict:
 
 def get_student_attendance_record(student_email: str, subject_id: int) -> dict | None:
     return next(
-        (record for record in get_student_attendance(student_email) if record["subject_id"] == subject_id),
+        (
+            record
+            for record in get_student_attendance(student_email)
+            if record["subject_id"] == subject_id
+        ),
         None,
     )
 
@@ -291,7 +320,7 @@ def _build_attendance_sessions(total_classes: int, attended_classes: int) -> lis
     ]
 
     for index in range(total_classes):
-        current_date += timedelta(days=random.randint(1, 3))
+        current_date += timedelta(days=random.randint(1, 3))  # nosec B311
         if current_date.weekday() == 6:
             current_date += timedelta(days=1)
 
@@ -299,7 +328,7 @@ def _build_attendance_sessions(total_classes: int, attended_classes: int) -> lis
             {
                 "sl_no": index + 1,
                 "date": current_date.strftime("%d-%b-%Y"),
-                "time": random.choice(time_slots),
+                "time": random.choice(time_slots),  # nosec B311
                 "status": statuses[index],
             }
         )
@@ -309,24 +338,38 @@ def _build_attendance_sessions(total_classes: int, attended_classes: int) -> lis
 
 def get_attendance_detail_context(student_email: str, subject_id: int) -> dict | None:
     attendance_records = get_student_attendance(student_email)
-    record_row = next((record for record in attendance_records if record["subject_id"] == subject_id), None)
+    record_row = next(
+        (record for record in attendance_records if record["subject_id"] == subject_id),
+        None,
+    )
     if record_row is None:
         return None
 
     record = dict(record_row)
-    if attendance_records and record["subject_id"] == attendance_records[0]["subject_id"]:
+    if (
+        attendance_records
+        and record["subject_id"] == attendance_records[0]["subject_id"]
+    ):
         record["attended_classes"] = int(record["total_classes"] * 0.55)
 
     return {
         "record": record,
-        "sessions": _build_attendance_sessions(record["total_classes"], record["attended_classes"]),
+        "sessions": _build_attendance_sessions(
+            record["total_classes"], record["attended_classes"]
+        ),
     }
 
 
 def get_marks_overview_context(student_email: str) -> dict:
     records = get_student_marks(student_email)
-    labels = [f"BCS-{record['subject_id']}0{index + 1}: {record['subject_name']}" for index, record in enumerate(records)]
-    obtained_marks = [record["internal_marks"] + record["assignment_marks"] + record["exam_marks"] for record in records]
+    labels = [
+        f"BCS-{record['subject_id']}0{index + 1}: {record['subject_name']}"
+        for index, record in enumerate(records)
+    ]
+    obtained_marks = [
+        record["internal_marks"] + record["assignment_marks"] + record["exam_marks"]
+        for record in records
+    ]
 
     overall_obtained = sum(obtained_marks)
     overall_max = len(records) * 100
@@ -341,7 +384,14 @@ def get_marks_overview_context(student_email: str) -> dict:
 
 
 def get_marks_detail_context(student_email: str, subject_id: int) -> dict | None:
-    record = next((row for row in get_student_marks(student_email) if row["subject_id"] == subject_id), None)
+    record = next(
+        (
+            row
+            for row in get_student_marks(student_email)
+            if row["subject_id"] == subject_id
+        ),
+        None,
+    )
     if record is None:
         return None
 
@@ -349,7 +399,9 @@ def get_marks_detail_context(student_email: str, subject_id: int) -> dict | None
     max_assignment = 20
     max_exam = 50
     total_max = max_internal + max_assignment + max_exam
-    total_obtained = record["internal_marks"] + record["assignment_marks"] + record["exam_marks"]
+    total_obtained = (
+        record["internal_marks"] + record["assignment_marks"] + record["exam_marks"]
+    )
 
     return {
         "record": record,
@@ -417,8 +469,13 @@ def apply_mark_updates(form_data: Mapping[str, str]) -> int:
         _, email, subject_id_raw = parts
         try:
             internal = max(0, min(30, int(value)))
-            assignment = max(0, min(20, int(form_data.get(f"assignment_{email}_{subject_id_raw}", 0))))
-            exam = max(0, min(50, int(form_data.get(f"exam_{email}_{subject_id_raw}", 0))))
+            assignment = max(
+                0,
+                min(20, int(form_data.get(f"assignment_{email}_{subject_id_raw}", 0))),
+            )
+            exam = max(
+                0, min(50, int(form_data.get(f"exam_{email}_{subject_id_raw}", 0)))
+            )
             subject_id = int(subject_id_raw)
         except (TypeError, ValueError):
             continue
@@ -440,21 +497,39 @@ def get_materials_management_context() -> dict:
     }
 
 
-def upload_note_from_form(subject_id_raw: str, title_raw: str, file_storage, admin_email: str) -> dict:
+def upload_note_from_form(
+    subject_id_raw: str, title_raw: str, file_storage, admin_email: str
+) -> dict:
     title = sanitize_text(title_raw, max_length=200)
 
     try:
         subject_id = int(subject_id_raw)
     except (TypeError, ValueError):
-        return {"success": False, "flash_category": "danger", "message": "Invalid subject selected."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Invalid subject selected.",
+        }
 
     if not title:
-        return {"success": False, "flash_category": "danger", "message": "Please provide a title for the material."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Please provide a title for the material.",
+        }
 
     if file_storage is None or not file_storage.filename:
-        return {"success": False, "flash_category": "danger", "message": "Please select a file to upload."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Please select a file to upload.",
+        }
 
-    ext = file_storage.filename.rsplit(".", 1)[-1].lower() if "." in file_storage.filename else ""
+    ext = (
+        file_storage.filename.rsplit(".", 1)[-1].lower()
+        if "." in file_storage.filename
+        else ""
+    )
     if ext not in NOTE_EXTS:
         return {
             "success": False,
@@ -470,8 +545,8 @@ def upload_note_from_form(subject_id_raw: str, title_raw: str, file_storage, adm
     os.makedirs(notes_dir, exist_ok=True)
 
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    unique = "".join(random.choices(_str.ascii_lowercase + _str.digits, k=6))
-    filename = f'{timestamp}_{unique}_{secure_filename(file_storage.filename)}'
+    unique = "".join(random.choices(_str.ascii_lowercase + _str.digits, k=6))  # nosec B311
+    filename = f"{timestamp}_{unique}_{secure_filename(file_storage.filename)}"
     save_path = os.path.join(notes_dir, filename)
     relative_path = f"notes/{filename}"
 
@@ -523,7 +598,9 @@ def get_notes_for_subject(subject_id: int) -> list[dict]:
 
 
 def add_note(subject_id: int, title: str, file_path: str, admin_email: str) -> int:
-    note = academic_repository.create_note(subject_id, title, file_path, admin_email, _now())
+    note = academic_repository.create_note(
+        subject_id, title, file_path, admin_email, _now()
+    )
     return note.id
 
 
@@ -539,7 +616,11 @@ def delete_note(note_id: int) -> str | None:
 def get_all_subjects() -> list[dict]:
     subjects = academic_repository.list_subjects()
     return [
-        {"id": subject.id, "subject_name": subject.subject_name, "credits": subject.credits}
+        {
+            "id": subject.id,
+            "subject_name": subject.subject_name,
+            "credits": subject.credits,
+        }
         for subject in subjects
     ]
 
@@ -560,7 +641,9 @@ def get_all_attendance() -> list[dict]:
     ]
 
 
-def update_attendance(student_email: str, subject_id: int, total: int, attended: int) -> None:
+def update_attendance(
+    student_email: str, subject_id: int, total: int, attended: int
+) -> None:
     row = academic_repository.get_attendance_record(student_email, subject_id)
     if row is not None:
         academic_repository.update_attendance_record(row, total, attended, _now())
@@ -571,7 +654,9 @@ def get_all_marks() -> list[dict]:
     return [_mark_dict(mark, subject_name) for mark, subject_name in rows]
 
 
-def update_marks(student_email: str, subject_id: int, internal: int, assignment: int, exam: int) -> None:
+def update_marks(
+    student_email: str, subject_id: int, internal: int, assignment: int, exam: int
+) -> None:
     row = academic_repository.get_mark_record(student_email, subject_id)
     if row is not None:
         academic_repository.update_mark_record(row, internal, assignment, exam, _now())
@@ -602,21 +687,35 @@ def get_full_timetable() -> list[dict]:
     ]
 
 
-def add_timetable_slot_from_form(form_data: Mapping[str, str], valid_days: list[str]) -> dict:
+def add_timetable_slot_from_form(
+    form_data: Mapping[str, str], valid_days: list[str]
+) -> dict:
     day = sanitize_text(form_data.get("day_of_week", ""), max_length=20)
     time_slot = sanitize_text(form_data.get("time_slot", ""), max_length=30)
     room = sanitize_text(form_data.get("room", "TBA"), max_length=50)
     subject_id_raw = form_data.get("subject_id", "")
 
     if day not in valid_days:
-        return {"success": False, "flash_category": "danger", "message": "Invalid day selected."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Invalid day selected.",
+        }
     if not time_slot:
-        return {"success": False, "flash_category": "danger", "message": "Time slot cannot be empty."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Time slot cannot be empty.",
+        }
 
     try:
         subject_id = int(subject_id_raw)
     except (TypeError, ValueError):
-        return {"success": False, "flash_category": "danger", "message": "Invalid subject selected."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Invalid subject selected.",
+        }
 
     add_timetable_slot(day, time_slot, subject_id, room or "TBA")
     return {
@@ -635,7 +734,9 @@ def add_timetable_slot(
     room: str,
     slot_type: str = "class",
 ) -> None:
-    academic_repository.create_timetable_slot(day, time_slot, subject_id, room, slot_type)
+    academic_repository.create_timetable_slot(
+        day, time_slot, subject_id, room, slot_type
+    )
     academic_repository.commit()
 
 
@@ -653,7 +754,9 @@ def bulk_create_users(rows: list[tuple[str, str]]) -> dict[str, int]:
         if email in existing_emails:
             skipped += 1
             continue
-        user_repository.create_user(email=email, role=role, created_at=_now(), commit=False)
+        user_repository.create_user(
+            email=email, role=role, created_at=_now(), commit=False
+        )
         existing_emails.add(email)
         created += 1
     user_repository.commit()
@@ -662,9 +765,17 @@ def bulk_create_users(rows: list[tuple[str, str]]) -> dict[str, int]:
 
 def bulk_create_users_from_csv(file_storage) -> dict:
     if file_storage is None or not file_storage.filename:
-        return {"success": False, "flash_category": "danger", "message": "Please upload a CSV file."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Please upload a CSV file.",
+        }
     if not file_storage.filename.lower().endswith(".csv"):
-        return {"success": False, "flash_category": "danger", "message": "Only .csv files are accepted."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Only .csv files are accepted.",
+        }
 
     try:
         stream = io.StringIO(file_storage.stream.read().decode("utf-8"))
@@ -682,14 +793,20 @@ def bulk_create_users_from_csv(file_storage) -> dict:
         errors: list[str] = []
 
         for index, row in enumerate(reader, start=2):
-            email = sanitize_text((row.get("email") or "").strip().lower(), max_length=254)
-            role = sanitize_text((row.get("role") or "student").strip().lower(), max_length=20)
+            email = sanitize_text(
+                (row.get("email") or "").strip().lower(), max_length=254
+            )
+            role = sanitize_text(
+                (row.get("role") or "student").strip().lower(), max_length=20
+            )
 
             if not email or "@" not in email or "." not in email.split("@")[-1]:
                 errors.append(f'Row {index}: invalid email "{email}"')
                 continue
             if role not in valid_roles:
-                errors.append(f'Row {index}: invalid role "{role}" (must be student or admin)')
+                errors.append(
+                    f'Row {index}: invalid role "{role}" (must be student or admin)'
+                )
                 continue
 
             rows_to_insert.append((email, role))
@@ -714,9 +831,9 @@ def bulk_create_users_from_csv(file_storage) -> dict:
         return {"success": False, "flash_category": "danger", "message": message}
 
     result = bulk_create_users(rows_to_insert)
-    message = f'{result["created"]} account(s) created, {result["skipped"]} skipped (duplicates).'
+    message = f"{result['created']} account(s) created, {result['skipped']} skipped (duplicates)."
     if errors:
-        message += f' {len(errors)} row(s) had errors and were skipped.'
+        message += f" {len(errors)} row(s) had errors and were skipped."
 
     return {
         "success": True,
@@ -749,7 +866,11 @@ def get_academic_summary_all_students() -> list[dict]:
     summary = []
     for email, num_subjects, total_attended, total_classes in attendance_rows:
         total_classes = total_classes or 0
-        attendance_pct = round((total_attended / total_classes) * 100, 1) if total_classes > 0 else 0.0
+        attendance_pct = (
+            round((total_attended / total_classes) * 100, 1)
+            if total_classes > 0
+            else 0.0
+        )
         summary.append(
             {
                 "email": email,

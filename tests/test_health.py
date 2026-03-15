@@ -1,7 +1,5 @@
 """Tests for the /health endpoint."""
 
-import pytest
-
 
 class TestHealthEndpoint:
     """Verify /health returns clean JSON and does not leak internal details."""

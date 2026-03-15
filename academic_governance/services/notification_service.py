@@ -22,13 +22,19 @@ def create_notification(title: str, message: str, link: str = "") -> int:
     return notification.id
 
 
-def create_notification_from_form(title_raw: str, message_raw: str, link_raw: str = "") -> dict:
+def create_notification_from_form(
+    title_raw: str, message_raw: str, link_raw: str = ""
+) -> dict:
     title = sanitize_text(title_raw, max_length=150)
     message = sanitize_text(message_raw, max_length=1000)
     link = sanitize_url(link_raw, max_length=300)
 
     if not title or not message:
-        return {"success": False, "flash_category": "danger", "message": "Title and message are required."}
+        return {
+            "success": False,
+            "flash_category": "danger",
+            "message": "Title and message are required.",
+        }
 
     notification_id = create_notification(title, message, link)
     return {

@@ -62,9 +62,15 @@ def create_app() -> Flask:
     def inject_notifications():
         if "user_email" in session and session.get("role") == config.ROLE_STUDENT:
             try:
-                return {"notifications": notification_service.get_notifications(limit=10)}
+                return {
+                    "notifications": notification_service.get_notifications(limit=10)
+                }
             except Exception:
-                app.logger.warning("Unable to load notifications for %s", session.get("user_email"), exc_info=True)
+                app.logger.warning(
+                    "Unable to load notifications for %s",
+                    session.get("user_email"),
+                    exc_info=True,
+                )
         return {"notifications": []}
 
     os.makedirs(config.UPLOAD_FOLDER, exist_ok=True)
@@ -80,11 +86,17 @@ def create_app() -> Flask:
 
     @app.errorhandler(400)
     def bad_request(error):
-        desc = error.description if hasattr(error, "description") else "Please check your input."
+        desc = (
+            error.description
+            if hasattr(error, "description")
+            else "Please check your input."
+        )
         if "CSRF" in desc:
             desc += " Please go back, refresh the page, and try again."
         return (
-            render_template("error.html", error_code=400, error_message=f"Bad request. {desc}"),
+            render_template(
+                "error.html", error_code=400, error_message=f"Bad request. {desc}"
+            ),
             400,
         )
 
@@ -101,7 +113,9 @@ def create_app() -> Flask:
 
     @app.errorhandler(404)
     def not_found(error):
-        return render_template("error.html", error_code=404, error_message="Page not found."), 404
+        return render_template(
+            "error.html", error_code=404, error_message="Page not found."
+        ), 404
 
     @app.errorhandler(429)
     def too_many_requests(error):
@@ -116,7 +130,9 @@ def create_app() -> Flask:
 
     @app.errorhandler(500)
     def internal_error(error):
-        app.logger.error("500 error: %s\n%s", error, traceback.format_exc(), exc_info=True)
+        app.logger.error(
+            "500 error: %s\n%s", error, traceback.format_exc(), exc_info=True
+        )
         return (
             render_template(
                 "error.html",
@@ -196,7 +212,9 @@ def create_app() -> Flask:
         response.headers["Referrer-Policy"] = "no-referrer"
 
         if is_prod:
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains"
+            )
 
         return response
 

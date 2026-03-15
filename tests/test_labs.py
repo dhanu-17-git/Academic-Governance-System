@@ -35,13 +35,19 @@ def main() -> None:
         db.session.commit()
 
         labs = lab_service.get_labs()
-        assert any(item["lab_name"] == "Lab A" for item in labs), f"Expected Lab A in labs list, got {labs}"
+        assert any(item["lab_name"] == "Lab A" for item in labs), (
+            f"Expected Lab A in labs list, got {labs}"
+        )
 
         ok_update, err_update = lab_service.update_lab_status(first.id, "working")
-        assert ok_update and err_update == "", f"Expected update success, got {(ok_update, err_update)}"
+        assert ok_update and err_update == "", (
+            f"Expected update success, got {(ok_update, err_update)}"
+        )
 
         ok_invalid, err_invalid = lab_service.update_lab_status(first.id, "Invalid")
-        assert (not ok_invalid) and err_invalid, f"Expected invalid status failure, got {(ok_invalid, err_invalid)}"
+        assert (not ok_invalid) and err_invalid, (
+            f"Expected invalid status failure, got {(ok_invalid, err_invalid)}"
+        )
 
         summary = lab_service.get_lab_summary()
         assert isinstance(summary, dict), f"Expected dict summary, got {type(summary)}"

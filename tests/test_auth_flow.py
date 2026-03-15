@@ -83,7 +83,9 @@ def test_login_sends_otp_email_when_configured(monkeypatch, app_and_client):
         delivered["otp"] = otp
         delivered["expires_in_minutes"] = expires_in_minutes
 
-    monkeypatch.setattr(auth_routes.email_service, "send_otp_email", fake_send_otp_email)
+    monkeypatch.setattr(
+        auth_routes.email_service, "send_otp_email", fake_send_otp_email
+    )
 
     login_page = client.get("/login")
     login_csrf = extract_csrf_token(login_page.get_data(as_text=True))
@@ -113,7 +115,9 @@ def test_login_clears_otp_when_email_delivery_fails(monkeypatch, app_and_client)
     def failing_send_otp_email(*args, **kwargs):
         raise auth_routes.email_service.EmailDeliveryError("smtp unavailable")
 
-    monkeypatch.setattr(auth_routes.email_service, "send_otp_email", failing_send_otp_email)
+    monkeypatch.setattr(
+        auth_routes.email_service, "send_otp_email", failing_send_otp_email
+    )
 
     login_page = client.get("/login")
     login_csrf = extract_csrf_token(login_page.get_data(as_text=True))
@@ -133,7 +137,9 @@ def test_login_clears_otp_when_email_delivery_fails(monkeypatch, app_and_client)
         assert "pending_email" not in session_data
 
 
-def test_login_fails_closed_without_email_delivery_in_non_debug(monkeypatch, app_and_client):
+def test_login_fails_closed_without_email_delivery_in_non_debug(
+    monkeypatch, app_and_client
+):
     app, client = app_and_client
 
     monkeypatch.setattr(auth_routes.config, "DEBUG", False)

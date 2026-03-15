@@ -7,7 +7,14 @@ from datetime import datetime
 from sqlalchemy.sql.elements import ColumnElement
 
 from academic_governance.db import db
-from academic_governance.models import Attendance, Mark, Note, StudentSubject, Subject, TimetableSlot
+from academic_governance.models import (
+    Attendance,
+    Mark,
+    Note,
+    StudentSubject,
+    Subject,
+    TimetableSlot,
+)
 
 
 def list_subjects() -> list[Subject]:

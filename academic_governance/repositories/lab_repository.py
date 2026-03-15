@@ -37,7 +37,9 @@ def get_lab_system(system_id: int) -> LabSystem | None:
     return db.session.get(LabSystem, system_id)
 
 
-def update_lab_system_status(system: LabSystem, status: str, last_updated: datetime) -> LabSystem:
+def update_lab_system_status(
+    system: LabSystem, status: str, last_updated: datetime
+) -> LabSystem:
     system.status = status
     system.last_updated = last_updated
     db.session.commit()

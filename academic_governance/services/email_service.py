@@ -82,7 +82,9 @@ def send_complaint_status_email(
     html_response_block = ""
     if admin_response:
         response_block = f"\n\nAdmin response:\n{admin_response}"
-        html_response_block = f"<p><strong>Admin response:</strong> {admin_response}</p>"
+        html_response_block = (
+            f"<p><strong>Admin response:</strong> {admin_response}</p>"
+        )
 
     text_body = (
         f"Your complaint {complaint_id} is now marked as {status}."

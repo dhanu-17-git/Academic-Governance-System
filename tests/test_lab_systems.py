@@ -18,8 +18,20 @@ def main() -> None:
         db.session.flush()
         db.session.add_all(
             [
-                LabSystem(lab_id=lab.id, row_label="A", seat_number=1, system_code="PC01", status="working"),
-                LabSystem(lab_id=lab.id, row_label="A", seat_number=2, system_code="PC02", status="not_working"),
+                LabSystem(
+                    lab_id=lab.id,
+                    row_label="A",
+                    seat_number=1,
+                    system_code="PC01",
+                    status="working",
+                ),
+                LabSystem(
+                    lab_id=lab.id,
+                    row_label="A",
+                    seat_number=2,
+                    system_code="PC02",
+                    status="not_working",
+                ),
             ]
         )
         db.session.commit()

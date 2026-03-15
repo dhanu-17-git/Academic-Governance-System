@@ -24,18 +24,24 @@ def main() -> None:
         first_subject_id = attendance[0]["subject_id"]
         academic_service.update_attendance(email, first_subject_id, 50, 40)
         updated_attendance = academic_service.get_student_attendance(email)
-        changed = next(row for row in updated_attendance if row["subject_id"] == first_subject_id)
+        changed = next(
+            row for row in updated_attendance if row["subject_id"] == first_subject_id
+        )
         assert changed["total_classes"] == 50
         assert changed["attended_classes"] == 40
 
         academic_service.update_marks(email, first_subject_id, 20, 15, 35)
         updated_marks = academic_service.get_student_marks(email)
-        changed_marks = next(row for row in updated_marks if row["subject_id"] == first_subject_id)
+        changed_marks = next(
+            row for row in updated_marks if row["subject_id"] == first_subject_id
+        )
         assert changed_marks["internal_marks"] == 20
         assert changed_marks["assignment_marks"] == 15
         assert changed_marks["exam_marks"] == 35
 
-        note_id = academic_service.add_note(first_subject_id, "Unit 1", "notes/unit1.pdf", "admin@college.edu")
+        note_id = academic_service.add_note(
+            first_subject_id, "Unit 1", "notes/unit1.pdf", "admin@college.edu"
+        )
         assert note_id > 0
         notes = academic_service.get_notes_for_subject(first_subject_id)
         assert any(note["id"] == note_id for note in notes)
@@ -48,8 +54,20 @@ def main() -> None:
         db.session.flush()
         db.session.add_all(
             [
-                LabSystem(lab_id=lab.id, row_label="A", seat_number=1, system_code="PC01", status="working"),
-                LabSystem(lab_id=lab.id, row_label="A", seat_number=2, system_code="PC02", status="not_working"),
+                LabSystem(
+                    lab_id=lab.id,
+                    row_label="A",
+                    seat_number=1,
+                    system_code="PC01",
+                    status="working",
+                ),
+                LabSystem(
+                    lab_id=lab.id,
+                    row_label="A",
+                    seat_number=2,
+                    system_code="PC02",
+                    status="not_working",
+                ),
             ]
         )
         db.session.commit()

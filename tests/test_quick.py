@@ -28,8 +28,12 @@ def _login(client, app, email: str, expected_redirect: str) -> None:
         data={"email": email, "csrf_token": login_csrf},
         follow_redirects=False,
     )
-    assert login_post.status_code == 302, f"POST /login failed: {login_post.status_code}"
-    assert login_post.headers["Location"].endswith("/verify-otp"), login_post.headers["Location"]
+    assert login_post.status_code == 302, (
+        f"POST /login failed: {login_post.status_code}"
+    )
+    assert login_post.headers["Location"].endswith("/verify-otp"), login_post.headers[
+        "Location"
+    ]
 
     with app.app_context():
         otp_record = auth_service.get_otp_record(email)
@@ -37,7 +41,9 @@ def _login(client, app, email: str, expected_redirect: str) -> None:
         otp = otp_record["otp"]
 
     verify_page = client.get("/verify-otp")
-    assert verify_page.status_code == 200, f"GET /verify-otp failed: {verify_page.status_code}"
+    assert verify_page.status_code == 200, (
+        f"GET /verify-otp failed: {verify_page.status_code}"
+    )
     verify_csrf = _extract_csrf_token(verify_page.get_data(as_text=True))
 
     verify_post = client.post(
@@ -45,8 +51,12 @@ def _login(client, app, email: str, expected_redirect: str) -> None:
         data={"otp": otp, "csrf_token": verify_csrf},
         follow_redirects=False,
     )
-    assert verify_post.status_code == 302, f"POST /verify-otp failed: {verify_post.status_code}"
-    assert verify_post.headers["Location"].endswith(expected_redirect), verify_post.headers["Location"]
+    assert verify_post.status_code == 302, (
+        f"POST /verify-otp failed: {verify_post.status_code}"
+    )
+    assert verify_post.headers["Location"].endswith(expected_redirect), (
+        verify_post.headers["Location"]
+    )
 
 
 def main() -> None:

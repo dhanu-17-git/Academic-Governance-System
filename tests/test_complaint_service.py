@@ -17,7 +17,9 @@ def main() -> None:
             student_email="student@college.edu",
             url="https://example.com/details",
         )
-        assert complaint_id.startswith("CMP"), f"Unexpected complaint id: {complaint_id}"
+        assert complaint_id.startswith("CMP"), (
+            f"Unexpected complaint id: {complaint_id}"
+        )
 
         stats = complaint_service.get_student_complaints("student@college.edu")
         assert stats["total"] == 1, f"Unexpected total complaints: {stats}"

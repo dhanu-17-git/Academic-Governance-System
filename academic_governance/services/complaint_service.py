@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
-import random
+import secrets
 import string
 from datetime import datetime, timezone
 
@@ -30,11 +30,11 @@ def _serialize_dt(value):
 
 
 def _generate_complaint_id() -> str:
-    return "CMP" + "".join(random.choices(string.digits, k=8))
+    return "CMP" + "".join(secrets.choice(string.digits) for _ in range(8))
 
 
 def _build_temp_upload_folder() -> tuple[str, str]:
-    temp_id = "TMP" + "".join(random.choices(string.digits, k=8))
+    temp_id = "TMP" + "".join(secrets.choice(string.digits) for _ in range(8))
     folder = os.path.join(config.UPLOAD_FOLDER, temp_id)
     os.makedirs(folder, exist_ok=True)
     return temp_id, folder
@@ -43,7 +43,7 @@ def _build_temp_upload_folder() -> tuple[str, str]:
 def _build_upload_filename(original_name: str) -> str:
     filename = os.path.basename(secure_filename(original_name))
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    unique = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    unique = "".join(secrets.choice(string.ascii_lowercase + string.digits) for _ in range(6))
     return f"{timestamp}_{unique}_{filename}"
 
 
@@ -143,7 +143,7 @@ def update_complaint_status(
     if new_status not in allowed_next:
         return False, (
             f'Cannot move from "{current_status}" to "{new_status}". '
-            f'Allowed transitions: {sorted(allowed_next) or "none (terminal state)"}'
+            f"Allowed transitions: {sorted(allowed_next) or 'none (terminal state)'}"
         )
 
     updated = complaint_repository.update_complaint_status(
@@ -184,13 +184,18 @@ def log_admin_action(admin_email: str, action: str) -> None:
 
 def get_all_complaint_stats() -> dict[str, int]:
     total = complaint_repository.count_all_complaints()
-    pending = complaint_repository.count_complaints_by_statuses(("Submitted", "Under Review"))
+    pending = complaint_repository.count_complaints_by_statuses(
+        ("Submitted", "Under Review")
+    )
     resolved = complaint_repository.count_complaints_by_status("Resolved")
     return {"total": total, "pending": pending, "resolved": resolved}
 
 
 def get_complaints_by_category(categories: list[str]) -> list[int]:
-    return [complaint_repository.count_complaints_by_category(category) for category in categories]
+    return [
+        complaint_repository.count_complaints_by_category(category)
+        for category in categories
+    ]
 
 
 def get_recent_complaints(limit: int = 10) -> list[dict]:

@@ -14,12 +14,18 @@ def main() -> None:
         auth_service.store_otp("student@college.edu", "654321", "2099-01-01 00:00:00")
         otp_record = auth_service.get_otp_record("student@college.edu")
         assert otp_record is not None, "Expected OTP record to exist."
-        assert otp_record["otp"] == "654321", f"Unexpected OTP value: {otp_record['otp']}"
-        assert otp_record["attempts"] == 0, f"Unexpected initial attempts: {otp_record['attempts']}"
+        assert otp_record["otp"] == "654321", (
+            f"Unexpected OTP value: {otp_record['otp']}"
+        )
+        assert otp_record["attempts"] == 0, (
+            f"Unexpected initial attempts: {otp_record['attempts']}"
+        )
 
         auth_service.increment_otp_attempts("student@college.edu")
         otp_record = auth_service.get_otp_record("student@college.edu")
-        assert otp_record["attempts"] == 1, f"Unexpected OTP attempts after increment: {otp_record['attempts']}"
+        assert otp_record["attempts"] == 1, (
+            f"Unexpected OTP attempts after increment: {otp_record['attempts']}"
+        )
 
         auth_service.record_rate_limit_attempt("login", "127.0.0.1")
         auth_service.record_rate_limit_attempt("login", "127.0.0.1")

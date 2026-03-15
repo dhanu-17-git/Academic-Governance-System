@@ -50,4 +50,6 @@ def init_sentry(app) -> None:  # noqa: ANN001 – Flask app
         environment=os.environ.get("FLASK_ENV", "development"),
         send_default_pii=False,
     )
-    logger.info("Sentry initialised (env=%s).", os.environ.get("FLASK_ENV", "development"))
+    logger.info(
+        "Sentry initialised (env=%s).", os.environ.get("FLASK_ENV", "development")
+    )

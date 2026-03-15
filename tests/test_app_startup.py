@@ -1,7 +1,5 @@
 """Tests for application startup and route availability."""
 
-import pytest
-
 from flask import Flask
 
 
