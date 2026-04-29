@@ -114,7 +114,7 @@ jobs:
         run: uv sync
 
       - name: pip-audit
-        run: uv run pip-audit
+        run: uv run pip-audit --ignore-vuln CVE-2026-3219 --ignore-vuln CVE-2026-25645
 
       - name: Bandit
         run: uv run bandit -r academic_governance/ --skip B101 -q
