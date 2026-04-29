@@ -17,6 +17,47 @@ from academic_governance.services import email_service
 logger = logging.getLogger(__name__)
 
 
+_POSITIVE = {
+    "good",
+    "great",
+    "excellent",
+    "happy",
+    "satisfied",
+    "wonderful",
+    "perfect",
+    "helpful",
+    "recommend",
+    "awesome",
+    "useful",
+}
+_NEGATIVE = {
+    "bad",
+    "poor",
+    "terrible",
+    "awful",
+    "worst",
+    "hate",
+    "dislike",
+    "unhappy",
+    "disappointed",
+    "problem",
+}
+
+
+def analyze_sentiment(comment: str) -> str:
+    """Rule-based classifier. Empty input → 'Neutral'."""
+    if not comment or not comment.strip():
+        return "Neutral"
+    words = comment.lower().split()
+    pos = sum(1 for w in words if w in _POSITIVE)
+    neg = sum(1 for w in words if w in _NEGATIVE)
+    if pos > neg:
+        return "Positive"
+    if neg > pos:
+        return "Negative"
+    return "Neutral"
+
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -78,7 +119,7 @@ def create_complaint_with_upload(
     save_path = os.path.join(temp_folder, filename)
     file_storage.save(save_path)
 
-    file_path = "/" + save_path.replace("\\", "/")
+    file_path = os.path.relpath(save_path, config.UPLOAD_FOLDER).replace("\\", "/")
     complaint_id = create_complaint(
         category,
         description,

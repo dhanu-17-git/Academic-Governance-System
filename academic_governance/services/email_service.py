@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html as html_mod
 import smtplib
 import ssl
 from email.message import EmailMessage
@@ -81,9 +82,10 @@ def send_complaint_status_email(
     response_block = ""
     html_response_block = ""
     if admin_response:
+        safe_response = html_mod.escape(admin_response)
         response_block = f"\n\nAdmin response:\n{admin_response}"
         html_response_block = (
-            f"<p><strong>Admin response:</strong> {admin_response}</p>"
+            f"<p><strong>Admin response:</strong> {safe_response}</p>"
         )
 
     text_body = (

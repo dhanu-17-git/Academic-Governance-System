@@ -35,6 +35,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD") or "demo@123"
+
     ADMIN_EMAILS = [email.lower() for email in ["admin@college.edu"]]
 
     UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", os.path.join(ROOT_DIR, "uploads"))
@@ -67,6 +69,9 @@ class Config:
 
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+    AI_API_KEY = os.environ.get("AI_API_KEY", "")
+    AI_BASE_URL = os.environ.get("AI_BASE_URL", "https://openrouter.ai/api/v1")
+    AI_MODEL = os.environ.get("AI_MODEL", "google/gemini-2.0-flash-lite-preview-02-05:free")
     EMAIL_HOST = os.environ.get("EMAIL_HOST", "").strip()
     EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
     EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").strip().lower() in {
@@ -99,11 +104,13 @@ class DevelopmentConfig(Config):
 class StagingConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = True
+    DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD")
 
 
 class ProductionConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = True
+    DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD")
 
 
 env = os.environ.get("FLASK_ENV", "development").strip().lower()
@@ -147,6 +154,9 @@ RATE_FEEDBACK_MAX = active_config.RATE_FEEDBACK_MAX
 RATE_FEEDBACK_WIN = active_config.RATE_FEEDBACK_WIN
 GOOGLE_CLIENT_ID = active_config.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = active_config.GOOGLE_CLIENT_SECRET
+AI_API_KEY = active_config.AI_API_KEY
+AI_BASE_URL = active_config.AI_BASE_URL
+AI_MODEL = active_config.AI_MODEL
 EMAIL_HOST = active_config.EMAIL_HOST
 EMAIL_PORT = active_config.EMAIL_PORT
 EMAIL_USE_TLS = active_config.EMAIL_USE_TLS
@@ -157,3 +167,4 @@ EMAIL_PASSWORD = active_config.EMAIL_PASSWORD
 EMAIL_FROM = active_config.EMAIL_FROM
 HOST = active_config.HOST
 PORT = active_config.PORT
+DEMO_PASSWORD = active_config.DEMO_PASSWORD

@@ -61,20 +61,6 @@ MIME_MAP = {
     "jpeg": "image/jpeg",
     "gif": "image/gif",
     "pdf": "application/pdf",
-    "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    "ppt": "application/vnd.ms-powerpoint",
-    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "doc": "application/msword",
-    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "txt": "text/plain",
-}
-
-OFFICE_MAGIC = {
-    "pptx": b"PK",
-    "docx": b"PK",
-    "xlsx": b"PK",
-    "ppt": bytes.fromhex("D0CF11E0A1B11AE1"),
-    "doc": bytes.fromhex("D0CF11E0A1B11AE1"),
 }
 
 
@@ -101,11 +87,5 @@ def validate_mime_type(file_storage) -> tuple[bool, str]:
         header.startswith(b"GIF87a") or header.startswith(b"GIF89a")
     ):
         return False, "File does not appear to be a valid GIF."
-    if ext in OFFICE_MAGIC and not header.startswith(OFFICE_MAGIC[ext]):
-        return False, f"File does not appear to be a valid .{ext} document."
-    if ext == "txt":
-        allowed = set(range(32, 127)) | {9, 10, 13}
-        if any(byte not in allowed for byte in header[:128]):
-            return False, "File does not appear to be a valid text document."
 
     return True, ""

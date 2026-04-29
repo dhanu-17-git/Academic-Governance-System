@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from academic_governance import config
 from academic_governance.db import db
@@ -11,7 +11,7 @@ from academic_governance.repositories import user_repository
 
 
 def _now() -> datetime:
-    return datetime.now().astimezone()
+    return datetime.now(timezone.utc)
 
 
 def store_otp(email: str, otp: str, expires_at: str) -> None:

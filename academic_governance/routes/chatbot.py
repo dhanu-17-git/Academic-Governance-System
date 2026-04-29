@@ -1,11 +1,21 @@
+import logging
+
 from flask import Blueprint, request, jsonify, session, render_template
 from flask_wtf.csrf import generate_csrf
+
 from academic_governance.services.chatbot_service import (
-    ask_gemini,
+    ask_ai,
     build_student_context,
 )
+from academic_governance.services.security import rate_limiter
+
+logger = logging.getLogger(__name__)
 
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
+
+# Rate limit: 20 requests per 60 seconds per user
+CHATBOT_RATE_MAX = 20
+CHATBOT_RATE_WINDOW = 60
 
 
 def get_logged_in_student():
@@ -30,6 +40,14 @@ def ask():
             }
         ), 401
 
+    # Rate limit chatbot requests to prevent API abuse
+    if not rate_limiter.is_allowed(
+        "chatbot", student_email, CHATBOT_RATE_MAX, CHATBOT_RATE_WINDOW
+    ):
+        return jsonify(
+            {"reply": "⏳ Too many requests. Please wait a moment.", "status": "rate_limited"}
+        ), 429
+
     data = request.get_json(silent=True)
     if not data or not data.get("message", "").strip():
         return jsonify(
@@ -42,14 +60,17 @@ def ask():
 
     try:
         context = build_student_context(student_email)
-    except Exception as e:
+    except Exception:
+        logger.exception("Failed to load academic context for %s", student_email)
         return jsonify(
-            {"reply": f"⚠️ Could not load academic data: {str(e)}", "status": "db_error"}
+            {"reply": "⚠️ Could not load academic data. Please try again later.", "status": "db_error"}
         ), 500
 
     try:
-        ai_reply = ask_gemini(context, user_message)
+        ai_reply = ask_ai(context, user_message)
+        rate_limiter.record("chatbot", student_email)
     except Exception:
+        logger.exception("AI API call failed for %s", student_email)
         return jsonify(
             {"reply": "🤖 AI service unavailable.", "status": "ai_error"}
         ), 500

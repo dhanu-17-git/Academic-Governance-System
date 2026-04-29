@@ -54,49 +54,6 @@ def _student_required():
 
 
 # ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-# Sentiment (rule-based, fully documented)
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-_POSITIVE = {
-    "good",
-    "great",
-    "excellent",
-    "amazing",
-    "wonderful",
-    "best",
-    "love",
-    "like",
-    "happy",
-    "satisfied",
-}
-_NEGATIVE = {
-    "bad",
-    "poor",
-    "terrible",
-    "awful",
-    "worst",
-    "hate",
-    "dislike",
-    "unhappy",
-    "disappointed",
-    "problem",
-}
-
-
-def _analyze_sentiment(comment: str) -> str:
-    """Rule-based classifier. Empty input ΓåÆ 'Neutral'."""
-    if not comment or not comment.strip():
-        return "Neutral"
-    words = comment.lower().split()
-    pos = sum(1 for w in words if w in _POSITIVE)
-    neg = sum(1 for w in words if w in _NEGATIVE)
-    if pos > neg:
-        return "Positive"
-    if neg > pos:
-        return "Negative"
-    return "Neutral"
-
-
-# ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 # Routes
 # ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 @student_bp.route("/dashboard")
@@ -324,9 +281,9 @@ def complaint_confirmation(complaint_id):
 
 @student_bp.route("/track-complaint", methods=["GET", "POST"])
 def track_complaint():
-    if "user_email" not in session:
-        flash("Please login first.", "warning")
-        return redirect(url_for("auth.login"))
+    guard = _student_required()
+    if guard:
+        return guard
 
     complaint = None
 
@@ -375,7 +332,7 @@ def academic_feedback():
             flash(err, "danger")
             return render_template("academic_feedback.html")
 
-        sentiment = _analyze_sentiment(comment)
+        sentiment = complaint_service.analyze_sentiment(comment)
         complaint_service.create_feedback(subject, int(rating), comment, sentiment)
         rate_limiter.record("feedback", email)
 

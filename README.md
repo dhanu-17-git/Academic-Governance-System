@@ -311,7 +311,7 @@ Screenshots of the system interface are available in:
 | `SECRET_KEY` | Flask cryptographic key | Yes | `super-secret-key` |
 | `DATABASE_URL` | PostgreSQL connection string | Yes | `postgresql+psycopg://user:pass@localhost:5432/db` |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | Yes | `12345-xyz.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | Yes | `--------` |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | Yes | `GOCSPX-dummy_secret_key_1234567890` |
 | `SMTP_USERNAME` | SMTP User for emails | Yes | `alerts@campus.edu` |
 | `SMTP_PASSWORD` | SMTP Password | Yes | `smtp-secret-pass` |
 | `SENTRY_DSN` | Sentry DSN for error tracking | No | `https://abc@o123.ingest.sentry.io/456` |

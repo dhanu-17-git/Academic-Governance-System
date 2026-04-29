@@ -48,6 +48,7 @@ def create_app() -> Flask:
     app.config["WTF_CSRF_TIME_LIMIT"] = config.WTF_CSRF_TIME_LIMIT
     app.config["GOOGLE_CLIENT_ID"] = config.GOOGLE_CLIENT_ID
     app.config["GOOGLE_CLIENT_SECRET"] = config.GOOGLE_CLIENT_SECRET
+    app.config["DEMO_PASSWORD"] = config.DEMO_PASSWORD
 
     setup_logging(logging.DEBUG if config.DEBUG else logging.INFO)
 

@@ -1,0 +1,140 @@
+diff --git a/academic_governance/__init__.py b/academic_governance/__init__.py
+index 568c7cb..9ea17bf 100644
+--- a/academic_governance/__init__.py
++++ b/academic_governance/__init__.py
+@@ -48,6 +48,7 @@ def create_app() -> Flask:
+     app.config["WTF_CSRF_TIME_LIMIT"] = config.WTF_CSRF_TIME_LIMIT
+     app.config["GOOGLE_CLIENT_ID"] = config.GOOGLE_CLIENT_ID
+     app.config["GOOGLE_CLIENT_SECRET"] = config.GOOGLE_CLIENT_SECRET
++    app.config["DEMO_PASSWORD"] = config.DEMO_PASSWORD
+ 
+     setup_logging(logging.DEBUG if config.DEBUG else logging.INFO)
+ 
+diff --git a/academic_governance/routes/auth.py b/academic_governance/routes/auth.py
+index 50b89a5..b037ae4 100644
+--- a/academic_governance/routes/auth.py
++++ b/academic_governance/routes/auth.py
+@@ -15,7 +15,17 @@ import secrets
+ import string
+ from datetime import datetime, timedelta, timezone
+ 
+-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
++from flask import (
++    Blueprint,
++    current_app,
++    flash,
++    redirect,
++    render_template,
++    request,
++    session,
++    url_for,
++)
++import sys
+ 
+ from academic_governance import config
+ from academic_governance.auth.google_oauth import get_google_client
+@@ -44,15 +54,19 @@ def _render_login():
+ 
+ 
+ def _send_login_otp(email: str, otp: str) -> bool:
++    # ALWAYS print OTP and link to terminal so the user can see it
++    try:
++        verify_link = url_for("auth.verify_otp", _external=True)
++        print(f"\n{'='*60}\n≡ƒöÆ [DEBUG] OTP for {email}: {otp}\n≡ƒöù VERIFICATION LINK: {verify_link}\n{'='*60}\n", file=sys.stderr, flush=True)
++    except Exception as e:
++        print(f"\n[ERROR] Could not generate link: {e}", file=sys.stderr)
++        print(f"\n≡ƒöÆ [DEBUG] OTP for {email}: {otp}\n", file=sys.stderr, flush=True)
++
+     if email_service.is_email_configured():
+         email_service.send_otp_email(email, otp)
+         logger.info("OTP email sent to %s", email)
+         return True
+ 
+-    # Fallback for development/unconfigured email
+-    import sys
+-    print(f"\n{'='*40}\n≡ƒöÆ [DEBUG] OTP for {email}: {otp}\n{'='*40}\n", file=sys.stderr, flush=True)
+-
+     logger.warning("SMTP NOT CONFIGURED. Development OTP for %s is %s", email, otp)
+     return True
+ 
+@@ -83,7 +97,7 @@ def login():
+         email = request.form.get("email", "").strip().lower()
+         password = request.form.get("password", "")
+ 
+-        if password != "demo@123":  # nosec B105
++        if password != config.DEMO_PASSWORD:  # nosec B105
+             flash("Invalid password. Please use the demo password.", "danger")
+             return _render_login()
+ 
+@@ -116,7 +130,7 @@ def login():
+             # We are allowing the login to proceed even if email fails to send in dev
+             # so the user can test using the printed OTP. 
+             _send_login_otp(email, otp)
+-        except Exception as exc:
++        except email_service.EmailDeliveryError as exc:
+             logger.warning("Email delivery failed, but proceeding in dev mode since OTP is printed. Error: %s", exc)
+ 
+             auth_service.delete_otp(email)
+diff --git a/academic_governance/routes/student.py b/academic_governance/routes/student.py
+index 250690b..38ea589 100644
+--- a/academic_governance/routes/student.py
++++ b/academic_governance/routes/student.py
+@@ -53,49 +53,6 @@ def _student_required():
+     return None
+ 
+ 
+-# ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+-# Sentiment (rule-based, fully documented)
+-# ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+-_POSITIVE = {
+-    "good",
+-    "great",
+-    "excellent",
+-    "amazing",
+-    "wonderful",
+-    "best",
+-    "love",
+-    "like",
+-    "happy",
+-    "satisfied",
+-}
+-_NEGATIVE = {
+-    "bad",
+-    "poor",
+-    "terrible",
+-    "awful",
+-    "worst",
+-    "hate",
+-    "dislike",
+-    "unhappy",
+-    "disappointed",
+-    "problem",
+-}
+-
+-
+-def _analyze_sentiment(comment: str) -> str:
+-    """Rule-based classifier. Empty input ╬ô├Ñ├å 'Neutral'."""
+-    if not comment or not comment.strip():
+-        return "Neutral"
+-    words = comment.lower().split()
+-    pos = sum(1 for w in words if w in _POSITIVE)
+-    neg = sum(1 for w in words if w in _NEGATIVE)
+-    if pos > neg:
+-        return "Positive"
+-    if neg > pos:
+-        return "Negative"
+-    return "Neutral"
+-
+-
+ # ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+ # Routes
+ # ╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç╬ô├╢├ç
+@@ -375,7 +332,7 @@ def academic_feedback():
+             flash(err, "danger")
+             return render_template("academic_feedback.html")
+ 
+-        sentiment = _analyze_sentiment(comment)
++        sentiment = complaint_service.analyze_sentiment(comment)
+         complaint_service.create_feedback(subject, int(rating), comment, sentiment)
+         rate_limiter.record("feedback", email)
+ 

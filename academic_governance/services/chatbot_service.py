@@ -115,38 +115,48 @@ RECENT GRIEVANCES
 """.strip()
 
 
-def ask_gemini(context: str, user_message: str) -> str:
-    api_key = os.environ.get("GEMINI_API_KEY")
+def ask_ai(context: str, user_message: str) -> str:
+    from academic_governance import config
+
+    api_key = config.AI_API_KEY
     if not api_key:
         return (
-            "Chatbot is not configured. Please add GEMINI_API_KEY to your environment."
+            "Chatbot is not configured. Please add AI_API_KEY to your environment."
         )
 
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.0-flash:generateContent?key={api_key}"
-    )
-    full_prompt = f"{context}\n\nStudent's Question: {user_message}"
+    # Standard OpenAI Chat Completions endpoint structure
+    base_url = config.AI_BASE_URL.rstrip("/")
+    url = f"{base_url}/chat/completions"
+
     payload = {
-        "contents": [{"parts": [{"text": full_prompt}]}],
-        "generationConfig": {
-            "temperature": 0.7,
-            "maxOutputTokens": 512,
-        },
+        "model": config.AI_MODEL,
+        "messages": [
+            {"role": "system", "content": context},
+            {"role": "user", "content": user_message}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 512,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:5000",
+        "X-Title": "Academic Governance System"
     }
 
     try:
-        response = requests.post(url, json=payload, timeout=15)
+        response = requests.post(url, json=payload, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+        return data["choices"][0]["message"]["content"]
     except requests.exceptions.Timeout:
         return "The AI took too long to respond. Please try again."
     except requests.exceptions.RequestException as exc:
-        logger.warning("Gemini request failed: %s", exc)
+        logger.warning("AI request failed: %s", exc)
         if getattr(exc, "response", None) is not None:
-            logger.warning("Gemini response status: %s", exc.response.status_code)
-            logger.warning("Gemini response body: %s", exc.response.text)
+            logger.warning("AI response status: %s", exc.response.status_code)
+            logger.warning("AI response body: %s", exc.response.text)
         return "Connection error. Please verify your API key and try again."
     except (KeyError, IndexError, TypeError):
         return "Unexpected response from AI. Please try again."

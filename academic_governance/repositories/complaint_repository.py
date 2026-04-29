@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from sqlalchemy.orm import joinedload, relationship
+
 from academic_governance.db import db
 from academic_governance.models import (
     AuditLog,
@@ -12,6 +14,18 @@ from academic_governance.models import (
     ComplaintOwnership,
     Feedback,
 )
+
+# ---------------------------------------------------------------------------
+# Dynamic relationship: avoids modifying models.py while enabling joinedload.
+# ---------------------------------------------------------------------------
+if not hasattr(Complaint, "ownership"):
+    Complaint.ownership = relationship(
+        "ComplaintOwnership",
+        primaryjoin="Complaint.id == foreign(ComplaintOwnership.complaint_id)",
+        uselist=False,
+        viewonly=True,
+        lazy="select",
+    )
 
 
 def create_complaint(
@@ -88,7 +102,12 @@ def get_complaint_with_owner(complaint_id: str):
 
 
 def get_complaint(complaint_id: str) -> Complaint | None:
-    return db.session.get(Complaint, complaint_id)
+    return (
+        db.session.query(Complaint)
+        .options(joinedload(Complaint.ownership))
+        .filter(Complaint.id == complaint_id)
+        .first()
+    )
 
 
 def update_complaint_status(
@@ -97,7 +116,12 @@ def update_complaint_status(
     admin_response: str,
     updated_at: datetime,
 ) -> Complaint | None:
-    complaint = db.session.get(Complaint, complaint_id)
+    complaint = (
+        db.session.query(Complaint)
+        .options(joinedload(Complaint.ownership))
+        .filter(Complaint.id == complaint_id)
+        .first()
+    )
     if complaint is None:
         return None
     complaint.status = new_status
@@ -141,6 +165,7 @@ def count_complaints_by_category(category: str) -> int:
 def list_recent_complaints(limit: int = 10) -> list[Complaint]:
     return (
         db.session.query(Complaint)
+        .options(joinedload(Complaint.ownership))
         .order_by(Complaint.created_at.desc())
         .limit(limit)
         .all()

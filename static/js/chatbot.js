@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
       suggestionsDiv.innerHTML = "";
       data.suggestions.forEach(text => {
         const chip = document.createElement("button");
-        chip.className = "whitespace-nowrap bg-white/80 backdrop-blur-sm text-indigo-700 px-4 py-2 mt-1 mb-2 rounded-xl text-xs font-bold cursor-pointer hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white hover:-translate-y-1 shadow-[0_4px_10px_-2px_rgba(79,70,229,0.2)] hover:shadow-[0_8px_20px_-5px_rgba(79,70,229,0.5)] transition-all duration-300 border border-indigo-100/50";
+        chip.className = "whitespace-nowrap bg-white text-slate-600 px-4 py-2 mt-1 mb-2 rounded-lg text-xs font-medium cursor-pointer hover:bg-slate-100 hover:text-slate-900 transition-colors border border-slate-200 shadow-sm";
         chip.textContent = text;
         chip.addEventListener("click", () => {
           inputField.value = text;
@@ -122,7 +122,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show user message
     addUserMessage(message);
     inputField.value = "";
-    charCount.textContent = "0 / 500";
+    if (charCount) {
+      charCount.textContent = "0 / 500";
+    }
 
     // Hide suggestions after first real message with a fade out
     if (suggestionsDiv.children.length > 0) {
@@ -165,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ── Message Renderers ───────────────────────────────────────────────
   function addUserMessage(text) {
     const el = document.createElement("div");
-    el.className = "chat-msg user max-w-[85%] px-5 py-3.5 rounded-[1.25rem] rounded-br-[0.25rem] text-[13px] sm:text-sm font-medium leading-relaxed shadow-[0_5px_15px_-5px_rgba(79,70,229,0.4)] bg-gradient-to-br from-indigo-500 to-indigo-600 text-white self-end animate-msg border border-indigo-400/30";
+    el.className = "chat-msg user max-w-[85%] px-4 py-3 rounded-2xl rounded-br-sm text-[13.5px] font-normal leading-relaxed bg-indigo-600 text-white self-end animate-msg shadow-sm shadow-indigo-100/50";
     el.textContent = text;
     messagesDiv.appendChild(el);
     scrollToBottom();
@@ -173,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function addBotMessage(text) {
     const el = document.createElement("div");
-    el.className = "chat-msg bot max-w-[85%] px-5 py-3.5 rounded-[1.25rem] rounded-bl-[0.25rem] text-[13px] sm:text-sm font-medium leading-relaxed shadow-[0_8px_20px_-6px_rgba(0,0,0,0.08)] bg-white text-slate-700 border border-slate-100/80 self-start animate-msg relative";
+    el.className = "chat-msg bot max-w-[85%] px-4 py-3 rounded-2xl rounded-bl-sm text-[13.5px] font-normal leading-relaxed bg-white text-slate-700 border border-slate-200 self-start animate-msg shadow-sm relative";
 
     // Convert **bold** markdown to <strong> and newlines to <br>
     el.innerHTML = formatBotText(text);
@@ -195,8 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ── Typing Indicator ────────────────────────────────────────────────
   function addTypingIndicator() {
     const el = document.createElement("div");
-    el.className = "chat-msg typing bg-white/80 backdrop-blur-sm self-start px-6 py-4 border border-slate-100/80 shadow-[0_5px_15px_-5px_rgba(0,0,0,0.05)] rounded-3xl rounded-bl-sm flex gap-1 items-center animate-msg";
-    el.innerHTML = '<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full typing-dot"></div><div class="w-2 h-2 rounded-full typing-dot"></div><div class="w-2 h-2 rounded-full typing-dot"></div></div>';
+    el.className = "chat-msg typing bg-white self-start px-5 py-4 border border-slate-200 shadow-sm rounded-2xl rounded-bl-sm flex gap-1.5 items-center animate-msg";
+    el.innerHTML = '<div class="w-1.5 h-1.5 rounded-full bg-slate-400 typing-dot"></div><div class="w-1.5 h-1.5 rounded-full bg-slate-400 typing-dot"></div><div class="w-1.5 h-1.5 rounded-full bg-slate-400 typing-dot"></div>';
     messagesDiv.appendChild(el);
     scrollToBottom();
     return el;
@@ -222,32 +224,20 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   inputField.addEventListener("input", () => {
-    const len = inputField.value.length;
-    charCount.textContent = `${len} / 500`;
-    charCount.style.color = len > 450 ? "#f43f5e" : "#94a3b8";
+    if (charCount) {
+      const len = inputField.value.length;
+      charCount.textContent = `${len} / 500`;
+      charCount.style.color = len > 450 ? "#f43f5e" : "#94a3b8";
+    }
   });
 
-  // ── Show notification badge and pulsing halos only once per session ──────
+  // ── Show notification badge only once per session ──────
   if (!sessionStorage.getItem('aria_welcomed')) {
-    const halo1 = document.getElementById("aria-halo-1");
-    const halo2 = document.getElementById("aria-halo-2");
-    
-    // Show halos
-    if (halo1) halo1.classList.remove("hidden");
-    if (halo2) halo2.classList.remove("hidden");
-
     setTimeout(() => {
       if (!hasOpened) {
         chatBadge.style.display = "flex";
       }
     }, 3000);
-
-    // Hide halos and mark as welcomed after 15 seconds to avoid annoyance
-    setTimeout(() => {
-      if (halo1) halo1.style.display = "none";
-      if (halo2) halo2.style.display = "none";
-      sessionStorage.setItem('aria_welcomed', 'true');
-    }, 15000);
   }
 
 });

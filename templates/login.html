@@ -50,6 +50,20 @@
                     AcademicGov.</p>
             </div>
 
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="mb-6 space-y-3">
+                  {% for category, message in messages %}
+                    <div class="p-4 rounded-2xl flex items-center gap-3 {% if category == 'danger' %}bg-rose-50 text-rose-700 border border-rose-100{% else %}bg-indigo-50 text-indigo-700 border border-indigo-100{% endif %} text-sm font-semibold animate-shake">
+                      <span class="material-symbols-outlined text-lg">{% if category == 'danger' %}error{% else %}info{% endif %}</span>
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
             <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 

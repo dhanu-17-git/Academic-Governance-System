@@ -27,12 +27,16 @@ class Complaint(db.Model):
     updated_at = db.Column(
         db.DateTime(timezone=True),
         server_default=db.func.now(),
+        onupdate=db.func.now(),
         nullable=False,
     )
 
 
 class ComplaintOwnership(db.Model):
     __tablename__ = "complaint_ownership"
+    __table_args__ = (
+        db.UniqueConstraint("complaint_id", name="uq_complaint_ownership_complaint_id"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     complaint_id = db.Column(
@@ -113,6 +117,9 @@ class Subject(db.Model):
 
 class StudentSubject(db.Model):
     __tablename__ = "student_subjects"
+    __table_args__ = (
+        db.UniqueConstraint("student_email", "subject_id", name="uq_student_subject"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     student_email = db.Column(db.String(255), nullable=False, index=True)

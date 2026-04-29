@@ -10,12 +10,22 @@ Phase 4 hardening:
 
 from __future__ import annotations
 
+import hmac
 import logging
 import secrets
 import string
+import sys
 from datetime import datetime, timedelta, timezone
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import (
+    Blueprint,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 
 from academic_governance import config
 from academic_governance.auth.google_oauth import get_google_client
@@ -44,14 +54,20 @@ def _render_login():
 
 
 def _send_login_otp(email: str, otp: str) -> bool:
+    # Only print OTP to terminal in development mode
+    logger.info("Inside _send_login_otp, config.DEBUG=%s", config.DEBUG)
+    if config.DEBUG:
+        try:
+            verify_link = url_for("auth.verify_otp", _external=True)
+            logger.info(f"\n{'='*60}\n🔒 [DEBUG] OTP for {email}: {otp}\n🔗 VERIFICATION LINK: {verify_link}\n{'='*60}\n")
+        except Exception as e:
+            logger.error(f"\n[ERROR] Could not generate link: {e}")
+            logger.info(f"\n🔒 [DEBUG] OTP for {email}: {otp}\n")
+
     if email_service.is_email_configured():
         email_service.send_otp_email(email, otp)
         logger.info("OTP email sent to %s", email)
         return True
-
-    # Fallback for development/unconfigured email
-    import sys
-    print(f"\n{'='*40}\n🔒 [DEBUG] OTP for {email}: {otp}\n{'='*40}\n", file=sys.stderr, flush=True)
 
     logger.warning("SMTP NOT CONFIGURED. Development OTP for %s is %s", email, otp)
     return True
@@ -62,6 +78,7 @@ def _complete_login(email: str, role: str):
     session["user_email"] = email
     session["role"] = role
     session["authenticated"] = True
+    session.modified = True  # Force session regeneration
 
     logger.info("Login completed for %s with role %s", email, role)
     flash("Login successful!", "success")
@@ -79,44 +96,52 @@ def index():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        logger.debug("POST /login hit")
         ip = _client_ip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
-        if password != "demo@123":  # nosec B105
-            flash("Invalid password. Please use the demo password.", "danger")
-            return _render_login()
+        logger.debug("Login attempt for %s from %s", email, ip)
 
+        # Rate limit FIRST — before any credential checks to prevent brute-force
         if not rate_limiter.is_allowed(
             "login",
             ip,
             config.RATE_LOGIN_MAX,
             config.RATE_LOGIN_WINDOW,
         ):
+            logger.warning("Failed login: Rate limited for %s", ip)
             flash(
                 "Too many login attempts. Please wait a minute and try again.", "danger"
             )
             return _render_login()
 
-        valid, err = validate_email(email)
-        if not valid:
-            flash(err, "danger")
+        if password != config.DEMO_PASSWORD:  # nosec B105
+            logger.warning("Failed login: Invalid password for %s", email)
+            rate_limiter.record("login", ip)  # Record failed attempt
+            flash("Invalid password. Please use the demo password.", "danger")
             return _render_login()
 
-        # Record attempt only after the email passes validation
-        rate_limiter.record("login", ip)
+        valid, err = validate_email(email)
+        if not valid:
+            logger.warning("Failed login: Invalid email format for %s: %s", email, err)
+            rate_limiter.record("login", ip)  # Record failed attempt
+            flash(err, "danger")
+            return _render_login()
 
         otp = _generate_otp()
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
         auth_service.prune_expired_otps()
         auth_service.store_otp(email, otp, expires_at.strftime("%Y-%m-%d %H:%M:%S"))
         session["pending_email"] = email
+        logger.info("OTP generated and stored for %s", email)
 
         try:
             # We are allowing the login to proceed even if email fails to send in dev
             # so the user can test using the printed OTP. 
             _send_login_otp(email, otp)
-        except Exception as exc:
+            logger.info("OTP verification info printed/sent for %s", email)
+        except email_service.EmailDeliveryError as exc:
             logger.warning("Email delivery failed, but proceeding in dev mode since OTP is printed. Error: %s", exc)
 
             auth_service.delete_otp(email)
@@ -129,6 +154,7 @@ def login():
             return _render_login()
 
         flash("Security Check: Enter the OTP sent to your email.", "info")
+        logger.debug("Redirecting to verify_otp for %s", email)
         return redirect(url_for("auth.verify_otp"))
 
     return _render_login()
@@ -150,7 +176,7 @@ def google_callback():
 
     try:
         token = google.authorize_access_token()
-    except Exception as e:
+    except (ValueError, KeyError, RuntimeError, OSError) as e:
         logger.error("Google OAuth token authorization failed: %s", e)
         flash("Failed to authenticate with Google. Please try again.", "danger")
         return redirect(url_for("auth.login"))
@@ -206,7 +232,7 @@ def verify_otp():
             flash("OTP has expired. Please request a new one.", "danger")
             return redirect(url_for("auth.login"))
 
-        if entered_otp != stored["otp"]:
+        if not hmac.compare_digest(entered_otp, stored["otp"]):
             rate_limiter.record("otp", email)
             auth_service.increment_otp_attempts(email)
             # Re-read from DB to get the accurate post-increment count
