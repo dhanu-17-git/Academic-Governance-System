@@ -14,7 +14,6 @@ import hmac
 import logging
 import secrets
 import string
-import sys
 from datetime import datetime, timedelta, timezone
 
 from flask import (
@@ -68,6 +67,9 @@ def _send_login_otp(email: str, otp: str) -> bool:
         email_service.send_otp_email(email, otp)
         logger.info("OTP email sent to %s", email)
         return True
+
+    if not config.DEBUG:
+        raise email_service.EmailDeliveryError("SMTP not configured in production mode")
 
     logger.warning("SMTP NOT CONFIGURED. Development OTP for %s is %s", email, otp)
     return True
@@ -193,7 +195,8 @@ def google_callback():
         return redirect(url_for("auth.login"))
 
     # Call unified completion logic
-    role = auth_service.resolve_login_role(email)
+    user, created = auth_service.get_or_create_google_user(email)
+    role = auth_service.resolve_login_role(email, user)
     return _complete_login(email, role)
 
 

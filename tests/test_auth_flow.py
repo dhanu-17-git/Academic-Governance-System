@@ -44,7 +44,7 @@ def test_otp_login_flow(app_and_client):
 
     login_post = client.post(
         "/login",
-        data={"email": "student@college.edu", "csrf_token": login_csrf},
+        data={"email": "student@college.edu", "password": config.DEMO_PASSWORD, "csrf_token": login_csrf},
         follow_redirects=False,
     )
     assert login_post.status_code == 302
@@ -92,7 +92,7 @@ def test_login_sends_otp_email_when_configured(monkeypatch, app_and_client):
 
     response = client.post(
         "/login",
-        data={"email": "student@college.edu", "csrf_token": login_csrf},
+        data={"email": "student@college.edu", "password": config.DEMO_PASSWORD, "csrf_token": login_csrf},
         follow_redirects=False,
     )
 
@@ -124,7 +124,7 @@ def test_login_clears_otp_when_email_delivery_fails(monkeypatch, app_and_client)
 
     response = client.post(
         "/login",
-        data={"email": "student@college.edu", "csrf_token": login_csrf},
+        data={"email": "student@college.edu", "password": config.DEMO_PASSWORD, "csrf_token": login_csrf},
         follow_redirects=True,
     )
 
@@ -150,7 +150,7 @@ def test_login_fails_closed_without_email_delivery_in_non_debug(
 
     response = client.post(
         "/login",
-        data={"email": "student@college.edu", "csrf_token": login_csrf},
+        data={"email": "student@college.edu", "password": config.DEMO_PASSWORD, "csrf_token": login_csrf},
         follow_redirects=True,
     )
 
@@ -171,7 +171,7 @@ def test_google_callback_creates_student_user(monkeypatch, app_and_client):
         lambda: FakeGoogleClient("google.student@college.edu"),
     )
 
-    response = client.get("/auth/google/callback", follow_redirects=False)
+    response = client.get("/google/callback", follow_redirects=False)
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/dashboard")
 
@@ -193,7 +193,7 @@ def test_google_callback_rejects_unverified_email(monkeypatch, app_and_client):
         lambda: FakeGoogleClient("google.student@college.edu", verified=False),
     )
 
-    response = client.get("/auth/google/callback", follow_redirects=False)
+    response = client.get("/google/callback", follow_redirects=False)
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/login")
 
@@ -213,7 +213,7 @@ def test_google_callback_uses_existing_user_role(monkeypatch, app_and_client):
         lambda: FakeGoogleClient("google.admin@college.edu"),
     )
 
-    response = client.get("/auth/google/callback", follow_redirects=False)
+    response = client.get("/google/callback", follow_redirects=False)
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/admin")
 

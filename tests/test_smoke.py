@@ -27,9 +27,10 @@ def _login(client, app, email: str, expected_redirect: str) -> None:
     assert login_page.status_code == 200
     login_csrf = _extract_csrf_token(login_page.get_data(as_text=True))
 
+    from academic_governance import config
     login_post = client.post(
         "/login",
-        data={"email": email, "csrf_token": login_csrf},
+        data={"email": email, "password": config.DEMO_PASSWORD, "csrf_token": login_csrf},
         follow_redirects=False,
     )
     assert login_post.status_code == 302
