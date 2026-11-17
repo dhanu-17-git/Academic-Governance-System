@@ -41,6 +41,10 @@ pytest-cache-files-*
 Thumbs.db
 
 # ── Project artifacts (not for distribution) ─────────────────
+.claude/settings.local.json
+bandit_results.json
+git_diff_report*.txt
+routes.txt
 codex_reports/
 dashboard_ui_snapshot/
 stitch_academic_governance_ai_dev_toolkit_dashboard/
