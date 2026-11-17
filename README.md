@@ -1,456 +1,136 @@
 # Academic Governance System
 
-[![CI](https://github.com/dhanu-17-git/Academic-Governance-System/actions/workflows/ci.yml/badge.svg)](https://github.com/dhanu-17-git/Academic-Governance-System/actions/workflows/ci.yml)
-![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)
-![Flask](https://img.shields.io/badge/flask-%23000.svg?style=flat&logo=flask&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=flat&logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A Flask and PostgreSQL platform for managing student academic services, complaints, labs, placements, and administration.
 
-A production-style academic governance platform built with Flask, PostgreSQL, OAuth authentication, and containerized deployment using Docker. The system models a modern campus backend with secure complaint handling, academic tracking, lab management, placement workflows, and admin analytics.
+## Why this exists
 
----
+Academic information and student support workflows are often split across separate tools. This project provides one role-aware portal for students and administrators, with authentication, academic records, complaint tracking, lab operations, placement workflows, and notifications backed by a relational database.
 
-## Overview
+## Key features
 
-The Academic Governance System streamlines academic operations for students, faculty, and administrators. It provides a unified platform for managing complaints, tracking attendance and marks, booking lab resources, coordinating placement drives, and delivering real-time notifications — all secured behind OTP and OAuth authentication.
+- Email OTP authentication and optional Google OAuth sign-in.
+- Student dashboards for attendance, marks, course materials, timetables, and progress.
+- Complaint submission, status tracking, admin responses, attachments, and notifications.
+- Lab system visibility and administrative status management.
+- Placement drive, profile, and application workflows.
+- Administrative tools for attendance, marks, materials, timetable, and student records.
+- Configurable AI chatbot integration through an OpenRouter-compatible API endpoint.
+- PostgreSQL persistence with Alembic/Flask-Migrate migrations and CI checks.
 
----
+## Tech stack
 
-## Table of Contents
+- **Backend:** Python 3.11+, Flask, Flask-SQLAlchemy, Flask-WTF, Flask-Migrate
+- **Database:** PostgreSQL 15, SQLAlchemy, psycopg
+- **Authentication:** Email OTP and Authlib-based Google OAuth
+- **Frontend:** Jinja2 templates, JavaScript, Tailwind CSS source/configuration, committed static assets
+- **Operations:** Gunicorn, Docker, Docker Compose, optional Nginx reverse proxy
+- **Quality:** pytest, Ruff, Bandit, pip-audit, GitHub Actions
+- **Dependency management:** uv and npm
 
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Quick Start](#quick-start)
-- [Authentication](#authentication)
-- [Authentication Flow](#authentication-flow)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Screenshots](#screenshots)
-- [Environment Variables](#environment-variables)
-- [Local Development Setup](#local-development-setup)
-- [Docker Setup](#docker-setup)
-- [Running Tests](#running-tests)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Security Features](#security-features)
-- [Demo Login](#demo-login-development-mode)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [Acknowledgements](#acknowledgements)
-- [License](#license)
-
----
-
-## System Architecture
-
-The system follows a layered architecture using Flask Blueprints for routing, service logic for business operations, and repository-based patterns for database interaction.
+## Architecture
 
 ```mermaid
-graph TD
-    User["User Browser"] --> Flask["Flask Application (Gunicorn)"]
-    
-    subgraph App ["Application Layers"]
-        AuthLayer["Authentication Layer"]
-        ServiceLayer["Service Layer"]
-        RepoLayer["Repository Layer"]
-    end
-    
-    Flask --> AuthLayer
-    AuthLayer --> EmailOTP["Email + OTP Login"]
-    AuthLayer --> GoogleOAuth["Google OAuth Login"]
-    
-    Flask --> ServiceLayer
-    ServiceLayer --> AcademicService["Academic Service"]
-    ServiceLayer --> ComplaintService["Complaint Service"]
-    ServiceLayer --> LabService["Lab Resource Service"]
-    ServiceLayer --> ChatbotService["Chatbot Service"]
-    
-    ServiceLayer --> RepoLayer
-    RepoLayer --> SAModels["SQLAlchemy Models"]
-    
-    RepoLayer --> DB[("PostgreSQL Database")]
+flowchart TD
+    Browser[Student or admin browser] --> Flask[Flask application]
+    Flask --> Blueprints[Auth, student, admin, health, chatbot blueprints]
+    Blueprints --> Services[Service layer]
+    Services --> Repositories[Repositories and SQLAlchemy models]
+    Repositories --> PostgreSQL[(PostgreSQL)]
+    Blueprints --> Static[Templates and static assets]
+    Auth[Google OAuth and email provider] --> Blueprints
+    Chatbot[Configured AI API] --> Services
 ```
 
-*Note: The system diagram below illustrates the high-level flow:*
+The application is created by `academic_governance.create_app()`. Routes are organized as Flask blueprints, business operations live in `academic_governance/services`, and database access is provided through SQLAlchemy models and repositories.
 
-```text
-User Browser
-↓
-Flask Application (Gunicorn)
-│
-├── Authentication Layer
-│   ├─ Email + OTP Login
-│   └─ Google OAuth Login
-│
-├── Service Layer
-│   ├─ Academic Service
-│   ├─ Complaint Service
-│   ├─ Lab Resource Service
-│   └─ Chatbot Service
-│
-├── Repository Layer
-│   └─ SQLAlchemy Models
-│
-↓
-PostgreSQL Database
-```
+## Setup and run
 
----
+### Local development
 
-## Quick Start
-
-Clone the repository and start the application locally:
+Requirements: Python 3.11+, PostgreSQL, and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 git clone https://github.com/dhanu-17-git/Academic-Governance-System.git
 cd Academic-Governance-System
+cp .env.example .env
 ```
 
-Install dependencies:
+Set at least `DATABASE_URL` and `SECRET_KEY` in `.env`. Add email, Google OAuth, AI, and Sentry values only when those integrations are needed. The configuration loads `.env` automatically.
 
 ```bash
-pip install uv
 uv sync
+uv run flask --app wsgi:app db upgrade
+uv run flask --app wsgi:app run
 ```
 
-Run database migrations:
+Open `http://127.0.0.1:5000`. The application expects PostgreSQL; it does not fall back to SQLite.
+
+### Docker Compose
+
+For the production-shaped Compose configuration, create the environment file expected by `docker-compose.yml`:
 
 ```bash
-uv run flask db upgrade
+cp .env.production.example .env.production
+# Replace the placeholder values in .env.production
+docker compose up --build
 ```
 
-Start the application:
+The web container listens on port `5000`. To include the optional Nginx proxy profile:
 
 ```bash
-uv run flask run
+docker compose --profile proxy up --build
 ```
 
-Then open: [http://127.0.0.1:5000](http://127.0.0.1:5000)
+The staging override uses `.env.staging`, port `5001` for the web service, and port `5433` for PostgreSQL:
 
+```bash
+cp .env.staging.example .env.staging
+# Replace the placeholder values in .env.staging
+docker compose -f docker-compose.yml -f docker-compose.staging.yml up --build
+```
 
----
+### Tests and checks
 
+```bash
+uv run pytest
+uv run ruff check .
+uv run bandit -r academic_governance/ --skip B101 -q
+uv run pip-audit
+```
 
+The CI workflow excludes the live-provider tests in `tests/test_openai.py` and `tests/test_gemini_models.py`.
 
+The repository includes Tailwind dependencies in `package.json` and `package-lock.json`; `package.json` currently defines no npm build or test scripts. The application serves the committed static assets directly.
 
----
-
-## Tech Stack
-
-| Layer         | Technology                                      |
-|---------------|--------------------------------------------------|
-| Backend       | Flask, Flask-WTF, Flask-SQLAlchemy, Flask-Migrate |
-| Database      | PostgreSQL, SQLAlchemy ORM, Alembic migrations    |
-| Auth          | OTP (email), Google OAuth via Authlib             |
-| Frontend      | Jinja2 templates, TailwindCSS, static assets      |
-| Deployment    | Docker, Docker Compose, Gunicorn, Nginx           |
-| Dependency Mgmt | uv                                              |
-| Observability | Structured logging, Sentry SDK                   |
-| Testing       | pytest with PostgreSQL-backed integration tests   |
-| CI/CD         | GitHub Actions                                    |
-
-
----
-
-## Features
-
-- **Student Dashboard** — Attendance, marks, timetable, course materials, and academic progress at a glance.
-- **Complaint Management** — Anonymous-feeling complaint flow with status tracking, admin responses, file attachments, and email notifications.
-- **Lab Resource Tracking** — View and manage lab systems, equipment status, and booking availability.
-- **Placement Portal** — Browse active placement drives, manage placement profiles, and track application status.
-- **Admin Analytics** — Administrative dashboards for attendance management, marks entry, bulk student creation, and at-risk student visibility.
-- **Authentication** — Dual-mode auth with email OTP and Google OAuth sign-in for accelerated onboarding.
-- **Notifications** — Real-time notification system for complaint updates, academic alerts, and system messages.
-- **AI Chatbot** — Gemini-powered chatbot for student support queries.
-
----
-
-## Authentication
-
-The platform implements a **Hybrid Authentication System** to balance security and convenience:
-
-• **Email + Password login with OTP verification**  
-• **Google OAuth login for instant sign-in**  
-• **Unified authentication handler using `_complete_login()`**  
-• **Role-based dashboard routing (Student / Admin)**
-
-### Login Methods
-
-| Method | Description |
-|------|-------------|
-| Email + OTP | Secure login using email verification code |
-| Google OAuth | Instant login using Google account |
-
----
-
-## Authentication Flow
-
-### Email Login Flow
-
-1. User enters email and password
-2. OTP is generated and printed in the development terminal
-3. User enters OTP
-4. OTP is validated
-5. `_complete_login()` creates the session and redirects to the dashboard
-
-### Google Login Flow
-
-1. User clicks "Continue with Google"
-2. OAuth authentication occurs through Google
-3. Verified email is returned to the application
-4. `_complete_login()` creates the session and redirects to the dashboard
-
-
----
-
-## Backend Architecture
-The project follows a **layered backend architecture** for maintainability and testability.
+## Project structure
 
 ```text
-academic_governance/
-│
-├── routes/        # HTTP endpoints (Flask Blueprints)
-├── services/      # Business logic layer
-├── repositories/  # Database access layer
-├── models.py      # SQLAlchemy ORM models
-├── utils/         # Logging, monitoring, helpers
-│
-deployment/
-│
-├── Dockerfile
-├── docker-compose.yml
-└── nginx.conf
+academic_governance/     Application package, routes, services, models, and repositories
+deployment/              Nginx, Gunicorn, systemd, backup, and deployment Compose files
+docs/                    Architecture, operations, deployment, and security documentation
+migrations/              Flask-Migrate/Alembic configuration and revisions
+scripts/                 Data seeding and integration utilities
+static/                  CSS, JavaScript, and frontend assets
+templates/               Jinja2 HTML templates
+tests/                   Unit, route, integration, and startup tests
+app.py                   Local Flask entry point
+wsgi.py                  Gunicorn/WSGI entry point
+pyproject.toml           Python project and tool configuration
 ```
-
-**Flow:** Request → Route → Service → Repository → Database
-
-
-
-The application follows a **blueprint-based Flask architecture** with clear separation of concerns:
-
-```
-Client Request
-  → Flask Blueprint (Route Layer)
-    → Service Layer (Business Logic)
-      → Repository Layer (Data Access)
-        → SQLAlchemy Models
-          → PostgreSQL
-```
-
-- **Routes** handle HTTP requests, form validation, and response rendering.
-- **Services** encapsulate business logic, orchestrate repository calls, and enforce rules.
-- **Repositories** provide a clean data-access abstraction over SQLAlchemy models.
-- **Models** define the database schema using SQLAlchemy ORM.
-
-The app factory pattern (`create_app()`) initialises extensions, registers blueprints, and configures middleware.
-
-
----
-
-## Project Structure
-
-```
-academic-governance-system/
-│
-├── academic_governance/          # Main application package
-│   ├── __init__.py               # App factory (create_app)
-│   ├── config.py                 # Configuration management
-│   ├── db.py                     # Database initialisation
-│   ├── models.py                 # SQLAlchemy ORM models
-│   ├── auth/                     # Authentication helpers
-│   ├── routes/                   # Blueprint route handlers
-│   ├── services/                 # Business logic layer
-│   ├── repositories/             # Data access layer
-│   └── utils/                    # Logging, Sentry, request middleware
-│
-├── templates/                    # Jinja2 HTML templates
-├── static/                       # CSS, JS, images
-├── tests/                        # pytest test suite
-├── migrations/                   # Alembic migration scripts
-│
-├── docs/                         # Project documentation
-│   ├── developer-team-report.md
-│   ├── architecture.md
-│   └── screenshots/
-│
-├── deployment/                   # Deployment configuration
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── gunicorn.conf.py
-│   ├── nginx.conf
-│   └── backup.sh
-│
-├── .github/workflows/ci.yml     # GitHub Actions CI pipeline
-├── pyproject.toml                # Project metadata & dependencies
-├── uv.lock                      # Locked dependency versions
-├── wsgi.py                       # WSGI entrypoint (Gunicorn)
-├── .env.example                  # Environment variable template
-├── .gitignore                    # Git ignore rules
-├── LICENSE                       # MIT License
-└── README.md                     # This file
-```
-
-
----
 
 ## Screenshots
 
-Screenshots of the system interface are available in:
+Screenshots are not currently included. Add them under `docs/images/` as the UI is documented:
 
-`docs/screenshots/`
-
----
-
-
----
-
-## Environment Variables
-
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `SECRET_KEY` | Flask cryptographic key | Yes | `super-secret-key` |
-| `DATABASE_URL` | PostgreSQL connection string | Yes | `postgresql+psycopg://user:pass@localhost:5432/db` |
-| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | Yes | `12345-xyz.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | Yes | `GOCSPX-dummy_secret_key_1234567890` |
-| `SMTP_USERNAME` | SMTP User for emails | Yes | `alerts@campus.edu` |
-| `SMTP_PASSWORD` | SMTP Password | Yes | `smtp-secret-pass` |
-| `SENTRY_DSN` | Sentry DSN for error tracking | No | `https://abc@o123.ingest.sentry.io/456` |
-
-
----
-
-## Local Development Setup
-
-### Prerequisites
-
-- Python 3.11+
-- PostgreSQL running locally
-- [uv](https://docs.astral.sh/uv/) package manager
-
-### Quick Start
-
-```bash
-# Install uv (if not already installed)
-pip install uv
-
-# Install all dependencies
-uv sync
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your database URL and secret key
-
-# Run database migrations
-uv run flask --app wsgi:app db upgrade
-
-# Start the development server
-uv run flask run
-```
-
-The application will be available at `http://localhost:5000`.
-
-
----
-
-## Docker Setup
-
-To run the full stack (Flask app, PostgreSQL, Nginx reverse proxy) in containers:
-
-```bash
-docker-compose up --build
-```
-
-**Running migrations inside Docker:**
-
-```bash
-docker-compose exec web uv run flask db upgrade
-```
-
-
----
-
-## Running Tests
-
-Run the test suite using `uv`:
-
-```bash
-uv run pytest tests/
-```
-
-*Note: Integration tests require a running PostgreSQL database.*
-
-
----
-
-## CI/CD Pipeline
-
-The project uses GitHub Actions for continuous integration. On every push and pull request, it automatically runs:
-
-- **Ruff** lint and format checks
-- **pytest** test suite
-- **Security scans**
-
-This ensures code quality and reliability before merging changes into the main branch.
-
-
----
-
-## Security Features
-
-• Google OAuth 2.0 authentication  
-• OTP-based email verification  
-• Rate limiting on authentication endpoints  
-• CSRF protection via Flask-WTF  
-• Secure session cookies and hardened security headers  
-• File upload validation and sanitisation  
-• Structured logging with optional Sentry monitoring
-
-
----
+![Screenshot](docs/images/placeholder.png)
 
 ## Roadmap
 
-- Mobile companion application
-- REST API endpoints for third-party integrations
-- Advanced analytics dashboards
-- Role-based reporting tools
-- Redis-backed caching and rate limiting
-
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes following conventional commits (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-
----
-
-## Acknowledgements
-
-- Flask
-- PostgreSQL
-- SQLAlchemy
-- Authlib
-- Tailwind CSS
-- Google Gemini API
-
-
----
-
-## Demo Login (Development Mode)
-
-Email: `student@college.edu`  
-Password: `demo@123`  
-
-After login, the OTP will appear in the server terminal.
-
----
+- Add a documented frontend build command if Tailwind assets become generated during development.
+- Replace the screenshot placeholder with current, sanitized application screenshots.
+- Separate optional live-provider checks from the default developer test command.
+- Keep deployment and secret-rotation documentation aligned with the Compose files and environment variables.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+This project is released under the MIT License. See [LICENSE](LICENSE).

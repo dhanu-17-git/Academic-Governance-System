@@ -2,10 +2,17 @@
 venv/
 .venv/
 .uv-cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+/build/
+/dist/
 
 # ── Environment / Secrets ────────────────────────────────────
 .env
@@ -37,11 +44,11 @@ pytest-cache-files-*
 # ── IDE / OS ─────────────────────────────────────────────────
 .vscode/
 .idea/
+.claude/
 .DS_Store
 Thumbs.db
 
 # ── Project artifacts (not for distribution) ─────────────────
-.claude/settings.local.json
 bandit_results.json
 git_diff_report*.txt
 routes.txt
